@@ -5,6 +5,7 @@ const morgan = require("morgan");
 require("dotenv").config();
 
 const healthRoutes = require("./routes/healthRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/health", healthRoutes);
+app.use("/api/users", userRoutes);
 
 // Start server
 app.listen(PORT, () => {
