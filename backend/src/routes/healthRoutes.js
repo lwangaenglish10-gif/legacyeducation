@@ -1,22 +1,26 @@
-const express = require("express");
-const pool = require("../config/database");
 
+const express = require("express");
 const router = express.Router();
+const pool = require("../config/database");
 
 router.get("/", async (req, res) => {
   try {
     await pool.query("SELECT 1");
 
-    res.json({
+    res.status(200).json({
       status: "healthy",
-      database: "connected"
+      database: "connected",
     });
   } catch (error) {
-    console.error("Database health check failed:", error.message);
+    // Log the real cause in Render Logs, without exposing credentials.
+    console.error("Database health check failed:", {
+      message: error.message,
+      code: error.code,
+    });
 
     res.status(500).json({
       status: "unhealthy",
-      database: "disconnected"
+      database: "disconnected",
     });
   }
 });
