@@ -17,3 +17,8 @@ Thumbs.db
 node_modules/
 package.json
 package-lock.json
+# Uploaded media files (keep files out of Git)
+backend/uploads/
+
+# Temporary test file
+backend/test.txt

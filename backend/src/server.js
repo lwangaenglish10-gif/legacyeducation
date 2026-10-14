@@ -9,6 +9,7 @@ const morgan = require("morgan");
 const healthRoutes = require("./routes/healthRoutes");
 const userRoutes = require("./routes/userRoutes");
 const contentRoutes = require("./routes/contentRoutes");
+const mediaRoutes = require("./routes/mediaRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,6 +32,7 @@ app.get("/", (req, res) => {
 app.use("/api/health", healthRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/content", contentRoutes);
+app.use("/api/media", mediaRoutes);
 
 // Handle unknown routes
 app.use((req, res) => {
@@ -41,7 +43,7 @@ app.use((req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error("Server error:", err.message);
+  console.error("Server error:", err);
 
   res.status(err.status || 500).json({
     message: "An unexpected server error occurred.",
@@ -49,6 +51,11 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`LegacyEducation API running on port ${PORT}`);
+});
+
+server.on("error", (err) => {
+  console.error("Server startup error:", err.message);
+  process.exitCode = 1;
 });
