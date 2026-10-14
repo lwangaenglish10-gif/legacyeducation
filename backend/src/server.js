@@ -1,28 +1,33 @@
 
-require("dotenv").config();
-
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const dotenv = require("dotenv");
 
+dotenv.config();
+
+// Import routes
 const healthRoutes = require("./routes/healthRoutes");
-const userRoutes = require("./routes/userRoutes");
+const usersRoutes = require("./routes/userRoutes");
 const contentRoutes = require("./routes/contentRoutes");
 const mediaRoutes = require("./routes/mediaRoutes");
+const learningModulesRoutes = require("./routes/learningModules");
+const lessonsRoutes = require("./routes/lessons");
 
+// Initialize application
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(helmet());
 app.use(cors());
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json());
 app.use(morgan("dev"));
 
-// Welcome route
+// Home route
 app.get("/", (req, res) => {
-  res.json({
+  res.status(200).json({
     message: "Welcome to the LegacyEducation API",
     status: "running",
   });
@@ -30,32 +35,33 @@ app.get("/", (req, res) => {
 
 // API routes
 app.use("/api/health", healthRoutes);
-app.use("/api/users", userRoutes);
+app.use("/api/users", usersRoutes);
 app.use("/api/content", contentRoutes);
 app.use("/api/media", mediaRoutes);
+app.use("/api/learning-modules", learningModulesRoutes);
+app.use("/api/lessons", lessonsRoutes);
 
-// Handle unknown routes
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     message: "Route not found.",
   });
 });
 
-// Error handler
+// Global error handler
 app.use((err, req, res, next) => {
-  console.error("Server error:", err);
+  console.error("Server error:", err.message);
 
-  res.status(err.status || 500).json({
-    message: "An unexpected server error occurred.",
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  res.status(500).json({
+    message: "Internal server error.",
   });
 });
 
 // Start server
-const server = app.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`LegacyEducation API running on port ${PORT}`);
-});
-
-server.on("error", (err) => {
-  console.error("Server startup error:", err.message);
-  process.exitCode = 1;
 });
