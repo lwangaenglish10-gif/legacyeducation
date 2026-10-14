@@ -1,4 +1,3 @@
-
 const API_BASE_URL = '/api'
 
 async function request(endpoint, options = {}) {
@@ -53,8 +52,15 @@ export const api = {
   adminTest: () => request('/users/admin-test'),
 
   getContent: () => request('/content'),
-
+createContent: (content) =>
+  request('/content', {
+    method: 'POST',
+    body: JSON.stringify(content),
+  }),
   getMedia: () => request('/media'),
+
+  getLearningModules: () => request('/learning-modules'),
+  getLessons: (moduleId) => request(`/lessons/module/${moduleId}`),
 }
 
 export default api
