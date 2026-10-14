@@ -13,3 +13,7 @@ Thumbs.db
 
 # VS Code
 .vscode/
+# Root accidental npm files
+node_modules/
+package.json
+package-lock.json
