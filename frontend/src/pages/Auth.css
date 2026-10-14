@@ -1,0 +1,141 @@
+
+.auth-page {
+  min-height: 100vh;
+  padding: 35px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #faf9f5;
+}
+
+.auth-logo {
+  margin-bottom: 35px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.auth-logo span {
+  color: #62834d;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 460px;
+  padding: 42px;
+  background: #fffefa;
+  border: 1px solid #e9e9e1;
+  border-radius: 8px;
+  box-shadow: 0 16px 45px rgba(23, 77, 59, 0.06);
+}
+
+.auth-card .eyebrow {
+  margin-bottom: 12px;
+}
+
+.auth-card h1 {
+  margin: 0;
+  color: #17251f;
+  font-family: 'Manrope', sans-serif;
+  font-size: 34px;
+  letter-spacing: -1.5px;
+}
+
+.auth-intro {
+  margin: 12px 0 28px;
+  color: #68736c;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.auth-card form {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-card label {
+  margin: 17px 0 8px;
+  color: #35483d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.auth-card input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 13px;
+  border: 1px solid #dfe3da;
+  border-radius: 4px;
+  outline: none;
+  background: #fffefa;
+  color: #17251f;
+  font: inherit;
+  font-size: 13px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-card input:focus {
+  border-color: #62834d;
+  box-shadow: 0 0 0 3px rgba(98, 131, 77, 0.12);
+}
+
+.auth-card input::placeholder {
+  color: #a0a69f;
+}
+
+.auth-submit {
+  width: 100%;
+  margin-top: 28px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.auth-submit:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.auth-error {
+  margin-bottom: 15px;
+  padding: 12px;
+  border: 1px solid #e6b8b1;
+  border-radius: 4px;
+  background: #fff0ed;
+  color: #8b2f25;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.auth-switch {
+  margin: 25px 0 0;
+  color: #68736c;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.auth-switch a {
+  color: #174d3b;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.auth-footer {
+  margin: 25px 0 0;
+  color: #858d85;
+  font-size: 11px;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 28px 22px;
+  }
+
+  .auth-card h1 {
+    font-size: 29px;
+  }
+}
