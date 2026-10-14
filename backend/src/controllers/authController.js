@@ -1,4 +1,5 @@
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const pool = require("../config/database");
 
 const loginUser = async (req, res) => {
@@ -8,7 +9,7 @@ const loginUser = async (req, res) => {
     // Validate required fields
     if (!email || !password) {
       return res.status(400).json({
-        message: "Email and password are required"
+        message: "Email and password are required",
       });
     }
 
@@ -20,7 +21,7 @@ const loginUser = async (req, res) => {
 
     if (result.rows.length === 0) {
       return res.status(401).json({
-        message: "Invalid email or password"
+        message: "Invalid email or password",
       });
     }
 
@@ -34,9 +35,21 @@ const loginUser = async (req, res) => {
 
     if (!passwordMatch) {
       return res.status(401).json({
-        message: "Invalid email or password"
+        message: "Invalid email or password",
       });
     }
+
+    // Create JWT
+    const token = jwt.sign(
+      {
+        id: user.id,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
 
     // Successful login
     res.json({
@@ -45,18 +58,19 @@ const loginUser = async (req, res) => {
         id: user.id,
         full_name: user.full_name,
         email: user.email,
-        role: user.role
-      }
+        role: user.role,
+      },
+      token,
     });
   } catch (error) {
     console.error("Login error:", error.message);
 
     res.status(500).json({
-      message: "Server error while logging in"
+      message: "Server error while logging in",
     });
   }
 };
 
 module.exports = {
-  loginUser
+  loginUser,
 };
