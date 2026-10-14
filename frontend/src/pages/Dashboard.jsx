@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../services/api'
-import './Auth.css'
+import './Dashboard.css'
 
 function Dashboard() {
   const navigate = useNavigate()
@@ -30,6 +30,7 @@ function Dashboard() {
         if (!active) return
 
         const verifiedUser = userData.user || userData
+
         setUser(verifiedUser)
 
         localStorage.setItem(
@@ -96,7 +97,7 @@ function Dashboard() {
 
   if (checking) {
     return (
-      <main className="auth-page">
+      <main className="dashboard-page">
         <p>Verifying your login...</p>
       </main>
     )
@@ -107,129 +108,139 @@ function Dashboard() {
   }
 
   return (
-    <main className="auth-page">
-      <Link to="/" className="auth-logo">
-        Legacy<span>Education</span>
-      </Link>
+    <main className="dashboard-page">
 
-      <section className="auth-card">
-        <p className="eyebrow">YOUR CREATIVE JOURNEY</p>
+      <header className="dashboard-header">
+        <Link to="/" className="dashboard-brand">
+          Legacy<span>Education</span>
+        </Link>
 
-        <h1>
-          Welcome{user.full_name ? `, ${user.full_name}` : ' back'}.
-        </h1>
-
-        <p className="auth-intro">
-          Discover learning resources, stories, articles and creative media
-          from the LegacyEducation community.
-        </p>
-
-        {error && (
-          <div className="auth-error" role="alert">
-            {error}
-          </div>
-        )}
-
-        <div className="dashboard-section">
-          <div className="dashboard-section-heading">
-            <p className="eyebrow">LEARN & DISCOVER</p>
-            <h2>Stories & Articles</h2>
-          </div>
-
-          {loadingContent ? (
-            <p>Loading stories and articles...</p>
-          ) : content.length === 0 ? (
-            <p>No published stories or articles yet.</p>
-          ) : (
-            <div className="dashboard-list">
-              {content.map((item) => (
-                <article
-                  className="dashboard-item"
-                  key={item.id}
-                >
-                  <p className="dashboard-item-type">
-                    {item.content_type || 'STORY'}
-                  </p>
-
-                  <h3>{item.title}</h3>
-
-                  {item.body && (
-                    <p>
-                      {item.body.length > 180
-                        ? `${item.body.substring(0, 180)}...`
-                        : item.body}
-                    </p>
-                  )}
-
-                  {item.author_name && (
-                    <small>By {item.author_name}</small>
-                  )}
-                </article>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="dashboard-section">
-          <div className="dashboard-section-heading">
-            <p className="eyebrow">CREATIVE MEDIA</p>
-            <h2>Media Library</h2>
-          </div>
-
-          {loadingContent ? (
-            <p>Loading media...</p>
-          ) : media.length === 0 ? (
-            <p>No published media yet.</p>
-          ) : (
-            <div className="dashboard-list">
-              {media.map((item) => (
-                <article
-                  className="dashboard-item"
-                  key={item.id}
-                >
-                  <p className="dashboard-item-type">
-                    {item.media_type || 'MEDIA'}
-                  </p>
-
-                  <h3>{item.title}</h3>
-
-                  {item.description && (
-                    <p>{item.description}</p>
-                  )}
-
-                  {item.file_url && (
-                    <a
-                      href={item.file_url}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Open media ↗
-                    </a>
-                  )}
-                </article>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="dashboard-actions">
-          <Link to="/" className="button">
-            Explore homepage ↗
-          </Link>
+        <div className="dashboard-header-actions">
+          <span className="dashboard-user">
+            {user.full_name}
+          </span>
 
           <button
-            className="button auth-submit"
+            className="dashboard-logout"
             type="button"
             onClick={handleLogout}
           >
             Sign out
           </button>
         </div>
+      </header>
+
+      <section className="dashboard-hero">
+        <p className="eyebrow">YOUR CREATIVE JOURNEY</p>
+
+        <h1>
+          Welcome, {user.full_name}.
+        </h1>
+
+        <p>
+          This is your space to learn, discover stories, explore creative
+          work, and build something that leaves a legacy.
+        </p>
       </section>
 
-      <p className="auth-footer">
+      {error && (
+        <div className="auth-error" role="alert">
+          {error}
+        </div>
+      )}
+
+      <section className="dashboard-section">
+        <div className="dashboard-section-heading">
+          <p className="eyebrow">LEARN & DISCOVER</p>
+          <h2>Stories & Articles</h2>
+        </div>
+
+        {loadingContent ? (
+          <p>Loading stories and articles...</p>
+        ) : content.length === 0 ? (
+          <p>No published stories or articles yet.</p>
+        ) : (
+          <div className="dashboard-list">
+            {content.map((item) => (
+              <article
+                className="dashboard-item"
+                key={item.id}
+              >
+                <p className="dashboard-item-type">
+                  {item.content_type || 'STORY'}
+                </p>
+
+                <h3>{item.title}</h3>
+
+                {item.body && (
+                  <p>
+                    {item.body.length > 180
+                      ? `${item.body.substring(0, 180)}...`
+                      : item.body}
+                  </p>
+                )}
+
+                {item.author_name && (
+                  <small>By {item.author_name}</small>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="dashboard-section">
+        <div className="dashboard-section-heading">
+          <p className="eyebrow">CREATIVE MEDIA</p>
+          <h2>Media Library</h2>
+        </div>
+
+        {loadingContent ? (
+          <p>Loading media...</p>
+        ) : media.length === 0 ? (
+          <p>No published media yet.</p>
+        ) : (
+          <div className="dashboard-list">
+            {media.map((item) => (
+              <article
+                className="dashboard-item"
+                key={item.id}
+              >
+                <p className="dashboard-item-type">
+                  {item.media_type || 'MEDIA'}
+                </p>
+
+                <h3>{item.title}</h3>
+
+                {item.description && (
+                  <p>{item.description}</p>
+                )}
+
+                {item.file_url && (
+                  <a
+                    href={item.file_url}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open media ↗
+                  </a>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <div className="dashboard-actions">
+        <Link to="/" className="button">
+          Explore homepage ↗
+        </Link>
+      </div>
+
+      <footer className="dashboard-footer">
         Learn. Create. Share. Leave a legacy.
-      </p>
+      </footer>
+
     </main>
   )
 }
