@@ -12,10 +12,11 @@ router.get("/", async (req, res) => {
       database: "connected",
     });
   } catch (error) {
-    // Log the real cause in Render Logs, without exposing credentials.
+    const code = error.code || "UNKNOWN";
+
     console.error("Database health check failed:", {
-      message: error.message,
-      code: error.code,
+      message: error.message || code,
+      code,
     });
 
     res.status(500).json({

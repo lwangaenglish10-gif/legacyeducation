@@ -1,5 +1,6 @@
 
 import './App.css'
+import { Link } from 'react-router-dom'
 
 function Home() {
   return (
@@ -17,8 +18,8 @@ function Home() {
         </nav>
 
         <div className="nav-actions">
-          <a className="login-link" href="#login">Log in</a>
-          <a className="button button-small" href="#join">Join the community</a>
+          <Link className="login-link" to="/login">Log in</Link>
+          <Link className="button button-small" to="/register">Join the community</Link>
         </div>
       </header>
 
@@ -33,7 +34,7 @@ function Home() {
             </p>
 
             <div className="hero-actions">
-              <a className="button" href="#join">Start your journey <span>↗</span></a>
+              <Link className="button" to="/register">Start your journey <span>↗</span></Link>
               <a className="text-link" href="#discover">Explore the platform ↓</a>
             </div>
 
@@ -145,7 +146,7 @@ function Home() {
             <p className="eyebrow">YOUR NEXT CHAPTER STARTS HERE</p>
             <h2>Don't just have an idea.<br />Give it a future.</h2>
           </div>
-          <a className="button button-light" href="#login">Become part of the journey <span>↗</span></a>
+          <Link className="button button-light" to="/register">Become part of the journey <span>↗</span></Link>
         </section>
       </main>
 

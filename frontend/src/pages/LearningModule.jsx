@@ -18,24 +18,16 @@ function LearningModule() {
         setError('')
 
         const [moduleResponse, lessonResponse] = await Promise.all([
-          api.getLearningModules(),
+          api.getLearningModule(moduleId),
           api.getLessons(moduleId),
         ])
-
-        const modules = Array.isArray(moduleResponse)
-          ? moduleResponse
-          : moduleResponse.modules || []
 
         const lessonItems = Array.isArray(lessonResponse)
           ? lessonResponse
           : lessonResponse.lessons || []
 
-        const selected = modules.find(
-          (item) => String(item.id) === String(moduleId)
-        )
-
         if (active) {
-          setModule(selected || null)
+          setModule(moduleResponse.module || moduleResponse)
           setLessons(lessonItems)
         }
       } catch (err) {

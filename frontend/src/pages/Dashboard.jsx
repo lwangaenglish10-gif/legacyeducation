@@ -374,7 +374,7 @@ function Dashboard() {
 
                 {item.file_url && (
                   <a
-                    href={item.file_url}
+                    href={api.mediaUrl(item.file_url)}
                     target="_blank"
                     rel="noreferrer"
                   >
