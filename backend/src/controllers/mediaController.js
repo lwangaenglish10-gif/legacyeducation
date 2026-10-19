@@ -1,8 +1,9 @@
 
 const mediaModel = require("../models/mediaModel");
+const cloudinary = require("../config/cloudinary");
+const { Readable } = require("stream");
 
 const validTypes = ["image", "video", "audio", "document"];
-const validStatuses = ["draft", "published"];
 
 const mediaTypeByMime = {
   "image/jpeg": "image",
@@ -24,76 +25,38 @@ const mediaTypeByMime = {
     "document",
 };
 
-function isAdmin(user) {
-  return user?.role === "admin";
+function uploadToCloudinary(file) {
+  return new Promise((resolve, reject) => {
+    const resourceType = file.mimetype.startsWith("image/")
+      ? "image"
+      : file.mimetype.startsWith("video/") ||
+          file.mimetype.startsWith("audio/")
+        ? "video"
+        : "raw";
+
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: resourceType,
+        folder: "legacyeducation/media",
+        use_filename: true,
+        unique_filename: true,
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        resolve(result);
+      }
+    );
+
+    Readable.from(file.buffer).pipe(uploadStream);
+  });
 }
 
-async function create(req, res, next) {
-  try {
-    const {
-      title,
-      description,
-      media_type,
-      file_url,
-      thumbnail_url,
-      mime_type,
-      file_size_bytes,
-      status,
-    } = req.body;
-
-    if (
-      typeof title !== "string" ||
-      !title.trim() ||
-      !media_type ||
-      typeof file_url !== "string" ||
-      !file_url.trim()
-    ) {
-      return res.status(400).json({
-        message: "Title, media type, and file URL are required.",
-      });
-    }
-
-    if (!validTypes.includes(media_type)) {
-      return res.status(400).json({
-        message: "Invalid media type.",
-      });
-    }
-
-    if (status !== undefined && !validStatuses.includes(status)) {
-      return res.status(400).json({
-        message: "Invalid media status.",
-      });
-    }
-
-    if (
-      file_size_bytes !== undefined &&
-      file_size_bytes !== null &&
-      (!Number.isSafeInteger(file_size_bytes) || file_size_bytes < 0)
-    ) {
-      return res.status(400).json({
-        message: "File size must be a non-negative integer.",
-      });
-    }
-
-    const media = await mediaModel.createMedia({
-      title: title.trim(),
-      description,
-      media_type,
-      file_url: file_url.trim(),
-      thumbnail_url,
-      mime_type,
-      file_size_bytes,
-      status: isAdmin(req.user) ? (status || "draft") : "draft",
-      uploaded_by: req.user.id,
-    });
-
-    return res.status(201).json({
-      message: "Media record created successfully.",
-      media,
-    });
-  } catch (error) {
-    next(error);
-  }
+function getUserId(req) {
+  return req.user?.id ?? req.user?.userId ?? null;
 }
 
 async function uploadFile(req, res, next) {
@@ -120,20 +83,39 @@ async function uploadFile(req, res, next) {
       });
     }
 
+    const uploadedFile = await uploadToCloudinary(req.file);
+
+    if (!uploadedFile?.secure_url) {
+      throw new Error("Cloudinary did not return a secure file URL.");
+    }
+
+    const userId = getUserId(req);
+
+    if (!userId) {
+      return res.status(401).json({
+        message: "Authentication is required to upload media.",
+      });
+    }
+
     const media = await mediaModel.createMedia({
       title: title.trim(),
       description:
-        typeof description === "string" ? description.trim() : null,
+        typeof description === "string" && description.trim()
+          ? description.trim()
+          : null,
       media_type,
-      file_url: `/api/media/files/${req.file.filename}`,
+      file_url: uploadedFile.secure_url,
+      thumbnail_url:
+        media_type === "image" ? uploadedFile.secure_url : null,
       mime_type: req.file.mimetype,
       file_size_bytes: req.file.size,
       status: "draft",
-      uploaded_by: req.user.id,
+      uploaded_by: userId,
     });
 
     return res.status(201).json({
-      message: "File uploaded successfully. It is saved as a draft.",
+      message:
+        "File uploaded successfully to Cloudinary and saved as a draft.",
       media,
     });
   } catch (error) {
@@ -164,9 +146,9 @@ async function listPublished(req, res, next) {
 
 async function getOne(req, res, next) {
   try {
-    const id = Number(req.params.id);
+    const { id } = req.params;
 
-    if (!Number.isInteger(id) || id < 1) {
+    if (!/^\d+$/.test(id)) {
       return res.status(400).json({
         message: "Invalid media ID.",
       });
@@ -179,15 +161,17 @@ async function getOne(req, res, next) {
         message: "Media not found.",
       });
     }
-console.log("DEBUG media record:", media);
-console.log("DEBUG authenticated user:", req.user);
-    if (
-      media.status !== "published" &&
-      media.uploaded_by !== req.user?.id &&
-      !isAdmin(req.user)
-    ) {
-      return res.status(404).json({
-        message: "Media not found.",
+
+    const userId = getUserId(req);
+    const isOwner =
+      userId !== null &&
+      String(media.uploaded_by) === String(userId);
+    const isAdmin = req.user?.role === "admin";
+    const isPublished = media.status === "published";
+
+    if (!isPublished && !isOwner && !isAdmin) {
+      return res.status(403).json({
+        message: "You are not allowed to view this media.",
       });
     }
 
@@ -197,27 +181,94 @@ console.log("DEBUG authenticated user:", req.user);
   }
 }
 
+async function create(req, res, next) {
+  try {
+    const {
+      title,
+      description,
+      media_type,
+      file_url,
+      thumbnail_url,
+      mime_type,
+      file_size_bytes,
+      status,
+    } = req.body;
+
+    if (typeof title !== "string" || !title.trim()) {
+      return res.status(400).json({
+        message: "A title is required.",
+      });
+    }
+
+    if (!validTypes.includes(media_type)) {
+      return res.status(400).json({
+        message: "Invalid media type.",
+      });
+    }
+
+    if (typeof file_url !== "string" || !file_url.trim()) {
+      return res.status(400).json({
+        message: "A file URL is required.",
+      });
+    }
+
+    const userId = getUserId(req);
+
+    if (!userId) {
+      return res.status(401).json({
+        message: "Authentication is required to create media.",
+      });
+    }
+
+    const media = await mediaModel.createMedia({
+      title: title.trim(),
+      description:
+        typeof description === "string" ? description.trim() : null,
+      media_type,
+      file_url: file_url.trim(),
+      thumbnail_url: thumbnail_url || null,
+      mime_type: mime_type || null,
+      file_size_bytes: file_size_bytes ?? null,
+      status: status === "published" ? "published" : "draft",
+      uploaded_by: userId,
+    });
+
+    return res.status(201).json({
+      message: "Media created successfully.",
+      media,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function update(req, res, next) {
   try {
-    const id = Number(req.params.id);
+    const { id } = req.params;
 
-    if (!Number.isInteger(id) || id < 1) {
+    if (!/^\d+$/.test(id)) {
       return res.status(400).json({
         message: "Invalid media ID.",
       });
     }
 
-    const existing = await mediaModel.getMediaById(id);
+    const existingMedia = await mediaModel.getMediaById(id);
 
-    if (!existing) {
+    if (!existingMedia) {
       return res.status(404).json({
         message: "Media not found.",
       });
     }
 
-    if (existing.uploaded_by !== req.user.id && !isAdmin(req.user)) {
+    const userId = getUserId(req);
+    const isOwner =
+      userId !== null &&
+      String(existingMedia.uploaded_by) === String(userId);
+    const isAdmin = req.user?.role === "admin";
+
+    if (!isOwner && !isAdmin) {
       return res.status(403).json({
-        message: "You cannot edit this media.",
+        message: "You are not allowed to update this media.",
       });
     }
 
@@ -241,53 +292,45 @@ async function update(req, res, next) {
       });
     }
 
-    if (media_type !== undefined && !validTypes.includes(media_type)) {
+    if (
+      media_type !== undefined &&
+      !validTypes.includes(media_type)
+    ) {
       return res.status(400).json({
         message: "Invalid media type.",
       });
     }
 
-    if (status !== undefined && !validStatuses.includes(status)) {
+    if (status !== undefined && !["draft", "published"].includes(status)) {
       return res.status(400).json({
         message: "Invalid media status.",
       });
     }
 
-    if (
-      file_size_bytes !== undefined &&
-      file_size_bytes !== null &&
-      (!Number.isSafeInteger(file_size_bytes) || file_size_bytes < 0)
-    ) {
-      return res.status(400).json({
-        message: "File size must be a non-negative integer.",
+    // Only administrators can publish or unpublish media.
+    if (status !== undefined && !isAdmin) {
+      return res.status(403).json({
+        message: "Only administrators can change media publication status.",
       });
     }
 
-    if (
-      file_url !== undefined &&
-      (typeof file_url !== "string" || !file_url.trim())
-    ) {
-      return res.status(400).json({
-        message: "File URL cannot be empty.",
-      });
-    }
-
-    const changes = {
+    const fields = {
       title: title === undefined ? undefined : title.trim(),
-      description,
+      description:
+        description === undefined
+          ? undefined
+          : typeof description === "string"
+            ? description.trim()
+            : null,
       media_type,
-      file_url: file_url === undefined ? undefined : file_url.trim(),
+      file_url,
       thumbnail_url,
       mime_type,
       file_size_bytes,
-      status: isAdmin(req.user)
-        ? status
-        : status === "published"
-          ? undefined
-          : status,
+      status,
     };
 
-    const media = await mediaModel.updateMedia(id, changes);
+    const media = await mediaModel.updateMedia(id, fields);
 
     return res.json({
       message: "Media updated successfully.",
@@ -300,32 +343,40 @@ async function update(req, res, next) {
 
 async function remove(req, res, next) {
   try {
-    const id = Number(req.params.id);
+    const { id } = req.params;
 
-    if (!Number.isInteger(id) || id < 1) {
+    if (!/^\d+$/.test(id)) {
       return res.status(400).json({
         message: "Invalid media ID.",
       });
     }
 
-    const existing = await mediaModel.getMediaById(id);
+    const existingMedia = await mediaModel.getMediaById(id);
 
-    if (!existing) {
+    if (!existingMedia) {
       return res.status(404).json({
         message: "Media not found.",
       });
     }
 
-    if (existing.uploaded_by !== req.user.id && !isAdmin(req.user)) {
+    const userId = getUserId(req);
+    const isOwner =
+      userId !== null &&
+      String(existingMedia.uploaded_by) === String(userId);
+    const isAdmin = req.user?.role === "admin";
+
+    if (!isOwner && !isAdmin) {
       return res.status(403).json({
-        message: "You cannot delete this media.",
+        message: "You are not allowed to delete this media.",
       });
     }
 
-    await mediaModel.deleteMedia(id);
+    // Remove the database record. Cloudinary files are not deleted here.
+    const media = await mediaModel.deleteMedia(id);
 
     return res.json({
       message: "Media deleted successfully.",
+      media,
     });
   } catch (error) {
     next(error);
@@ -333,10 +384,10 @@ async function remove(req, res, next) {
 }
 
 module.exports = {
-  create,
   uploadFile,
   listPublished,
   getOne,
+  create,
   update,
   remove,
 };
