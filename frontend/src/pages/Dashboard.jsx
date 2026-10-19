@@ -19,7 +19,12 @@ function Dashboard() {
   const [submittingArticle, setSubmittingArticle] = useState(false)
   const [articleMessage, setArticleMessage] = useState('')
   const [articleError, setArticleError] = useState(false)
-
+const [mediaTitle, setMediaTitle] = useState('')
+const [mediaDescription, setMediaDescription] = useState('')
+const [mediaFile, setMediaFile] = useState(null)
+const [uploadingMedia, setUploadingMedia] = useState(false)
+const [mediaMessage, setMediaMessage] = useState('')
+const [mediaError, setMediaError] = useState(false)
   useEffect(() => {
     let active = true
 
@@ -145,6 +150,53 @@ function Dashboard() {
       )
     } finally {
       setSubmittingArticle(false)
+    }
+  }
+
+  async function handleMediaUpload(event) {
+    event.preventDefault()
+
+    setMediaMessage('')
+    setMediaError(false)
+
+    if (!mediaTitle.trim() || !mediaFile) {
+      setMediaMessage('Please enter a title and select a file.')
+      setMediaError(true)
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('title', mediaTitle.trim())
+    formData.append('description', mediaDescription.trim())
+    formData.append('file', mediaFile)
+
+    setUploadingMedia(true)
+
+    try {
+      const result = await api.uploadMedia(formData)
+
+      setMediaMessage(
+        result.message || 'File uploaded successfully.'
+      )
+      setMediaTitle('')
+      setMediaDescription('')
+      setMediaFile(null)
+
+      const updatedMedia = await api.getMedia()
+      setMedia(
+        Array.isArray(updatedMedia)
+          ? updatedMedia
+          : updatedMedia.media || updatedMedia.data || []
+      )
+
+      event.target.reset()
+    } catch (err) {
+      setMediaError(true)
+      setMediaMessage(
+        err.message || 'Upload failed. Please try again.'
+      )
+    } finally {
+      setUploadingMedia(false)
     }
   }
 
@@ -347,6 +399,54 @@ function Dashboard() {
       </section>
 
       {/* MEDIA LIBRARY */}
+
+<section className="dashboard-section">
+  <div className="dashboard-section-heading">
+    <p className="eyebrow">CONTRIBUTE</p>
+    <h2>Upload Media</h2>
+  </div>
+
+  <form
+    className="dashboard-article-form"
+    onSubmit={handleMediaUpload}
+  >
+    <label htmlFor="media-title">Media title</label>
+    <input
+      id="media-title"
+      type="text"
+      value={mediaTitle}
+      onChange={(event) => setMediaTitle(event.target.value)}
+      required
+    />
+
+    <label htmlFor="media-description">Description (optional)</label>
+    <textarea
+      id="media-description"
+      value={mediaDescription}
+      onChange={(event) => setMediaDescription(event.target.value)}
+      rows={3}
+    />
+
+    <label htmlFor="media-file">Choose a file</label>
+    <input
+      id="media-file"
+      type="file"
+      accept="image/*,video/*,audio/*,.pdf,.txt,.doc,.docx,.ppt,.pptx"
+      onChange={(event) => setMediaFile(event.target.files?.[0] || null)}
+      required
+    />
+
+    <button type="submit" disabled={uploadingMedia}>
+      {uploadingMedia ? 'Uploading...' : 'Upload Media'}
+    </button>
+
+    {mediaMessage && (
+      <p role="status" aria-live="polite">
+        {mediaMessage}
+      </p>
+    )}
+  </form>
+</section>
 
       <section className="dashboard-section">
         <div className="dashboard-section-heading">

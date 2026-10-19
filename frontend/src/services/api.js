@@ -34,11 +34,11 @@ async function request(endpoint, options = {}) {
     headers.Authorization = `Bearer ${token}`
   }
 
-  const response = await fetch(getApiUrl(endpoint), {
-    ...options,
-    headers,
-  })
-
+ const response = await fetch(getApiUrl(endpoint), {
+  ...options,
+  cache: 'no-store',
+  headers,
+})
   const data = await response.json().catch(() => ({}))
 
   if (!response.ok) {
@@ -92,7 +92,11 @@ export const api = {
       body: JSON.stringify(content),
     }),
   getMedia: () => request('/media'),
-
+uploadMedia: (formData) =>
+  request('/media/upload', {
+    method: 'POST',
+    body: formData,
+  }),
   getLearningModules: () => request('/learning-modules'),
   getLearningModule: (moduleId) =>
     request(`/learning-modules/${encodeURIComponent(moduleId)}`),
