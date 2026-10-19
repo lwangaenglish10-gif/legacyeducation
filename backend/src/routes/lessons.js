@@ -1,3 +1,4 @@
+
 const express = require('express');
 
 const protect = require('../middleware/authMiddleware');
@@ -8,6 +9,12 @@ const {
   getLessonById,
   createLesson,
 } = require('../models/lessonModel');
+
+const {
+  markLessonCompleted,
+  getCompletedLessonsByUser,
+  getModuleProgressByUser,
+} = require('../models/lessonProgressModel');
 
 const router = express.Router();
 
@@ -25,14 +32,44 @@ router.get('/module/:moduleId', async (req, res) => {
 
     const lessons = await getPublishedLessonsByModuleId(moduleId);
 
-    res.json({
-      lessons,
-    });
+    return res.json({ lessons });
   } catch (error) {
     console.error('Error fetching lessons:', error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: 'Failed to fetch lessons.',
+    });
+  }
+});
+
+// GET /api/lessons/progress/me
+// Get completed lessons for the logged-in user
+router.get('/progress/me', protect, async (req, res) => {
+  try {
+    const lessons = await getCompletedLessonsByUser(req.user.id);
+
+    return res.json({ lessons });
+  } catch (error) {
+    console.error('Error fetching completed lessons:', error);
+
+    return res.status(500).json({
+      message: 'Failed to fetch lesson progress.',
+    });
+  }
+});
+
+// GET /api/lessons/progress/modules
+// Get progress for the logged-in user across published modules
+router.get('/progress/modules', protect, async (req, res) => {
+  try {
+    const modules = await getModuleProgressByUser(req.user.id);
+
+    return res.json({ modules });
+  } catch (error) {
+    console.error('Error fetching module progress:', error);
+
+    return res.status(500).json({
+      message: 'Failed to fetch module progress.',
     });
   }
 });
@@ -57,14 +94,48 @@ router.get('/:id', async (req, res) => {
       });
     }
 
-    res.json({
-      lesson,
-    });
+    return res.json({ lesson });
   } catch (error) {
     console.error('Error fetching lesson:', error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: 'Failed to fetch lesson.',
+    });
+  }
+});
+
+// POST /api/lessons/:id/complete
+// Mark a published lesson complete for the logged-in user
+router.post('/:id/complete', protect, async (req, res) => {
+  try {
+    const lessonId = Number(req.params.id);
+
+    if (!Number.isInteger(lessonId) || lessonId < 1) {
+      return res.status(400).json({
+        message: 'Invalid lesson ID.',
+      });
+    }
+
+    const progress = await markLessonCompleted(
+      req.user.id,
+      lessonId
+    );
+
+    if (!progress) {
+      return res.status(404).json({
+        message: 'Published lesson not found.',
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Lesson marked as completed.',
+      progress,
+    });
+  } catch (error) {
+    console.error('Error marking lesson completed:', error);
+
+    return res.status(500).json({
+      message: 'Failed to save lesson progress.',
     });
   }
 });
@@ -85,7 +156,10 @@ router.post(
         is_published,
       } = req.body;
 
-      if (!Number.isInteger(Number(module_id)) || Number(module_id) < 1) {
+      if (
+        !Number.isInteger(Number(module_id)) ||
+        Number(module_id) < 1
+      ) {
         return res.status(400).json({
           message: 'A valid module ID is required.',
         });
@@ -111,14 +185,14 @@ router.post(
         is_published,
       });
 
-      res.status(201).json({
+      return res.status(201).json({
         message: 'Lesson created successfully.',
         lesson,
       });
     } catch (error) {
       console.error('Error creating lesson:', error);
 
-      res.status(500).json({
+      return res.status(500).json({
         message: 'Failed to create lesson.',
       });
     }
