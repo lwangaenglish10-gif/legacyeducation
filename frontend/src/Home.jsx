@@ -1,8 +1,37 @@
 
 import './App.css'
 import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { api } from './services/api'
 
 function Home() {
+  const [newsletterEmail, setNewsletterEmail] = useState('')
+const [newsletterConsent, setNewsletterConsent] = useState(false)
+const [newsletterMessage, setNewsletterMessage] = useState('')
+const [newsletterLoading, setNewsletterLoading] = useState(false)
+
+async function handleNewsletterSubmit(event) {
+  event.preventDefault()
+  setNewsletterMessage('')
+  setNewsletterLoading(true)
+
+  try {
+    const result = await api.subscribeNewsletter(
+      newsletterEmail,
+      newsletterConsent
+    )
+    setNewsletterMessage(result.message)
+    setNewsletterEmail('')
+    setNewsletterConsent(false)
+  } catch (error) {
+    setNewsletterMessage(
+      error.message || 'Subscription failed. Please try again.'
+    )
+  } finally {
+    setNewsletterLoading(false)
+  }
+}
+
   return (
     <div className="site">
       <header className="navbar">
@@ -277,6 +306,55 @@ function Home() {
             Become part of the journey <span>↗</span>
           </Link>
         </section>
+
+<section className="newsletter-section" id="newsletter">
+  <div className="newsletter-content">
+    <p className="eyebrow">THE LEGACYEDUCATION LETTER</p>
+    <h2>Ideas worth sharing.</h2>
+    <p>
+      Get creative stories, learning opportunities and platform
+      updates delivered to your inbox.
+    </p>
+
+    <form onSubmit={handleNewsletterSubmit} className="newsletter-form">
+      <label htmlFor="newsletter-email">Email address</label>
+      <input
+        id="newsletter-email"
+        type="email"
+        value={newsletterEmail}
+        onChange={(event) => setNewsletterEmail(event.target.value)}
+        placeholder="you@example.com"
+        maxLength={254}
+        required
+      />
+
+      <label className="newsletter-consent">
+        <input
+          type="checkbox"
+          checked={newsletterConsent}
+          onChange={(event) => setNewsletterConsent(event.target.checked)}
+          required
+        />
+        I agree to receive newsletter updates from LegacyEducation.
+      </label>
+
+      <button
+        className="button"
+        type="submit"
+        disabled={newsletterLoading}
+      >
+        {newsletterLoading ? 'Subscribing...' : 'Subscribe to updates'}
+      </button>
+
+      {newsletterMessage && (
+        <p role="status" aria-live="polite">
+          {newsletterMessage}
+        </p>
+      )}
+    </form>
+  </div>
+</section>
+
       </main>
 
       <footer className="footer">

@@ -13,7 +13,7 @@ const contentRoutes = require("./routes/contentRoutes");
 const mediaRoutes = require("./routes/mediaRoutes");
 const learningModulesRoutes = require("./routes/learningModules");
 const lessonsRoutes = require("./routes/lessons");
-
+const newsletterRoutes = require("./routes/newsletterRoutes");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -35,7 +35,7 @@ app.use("/api/content", contentRoutes);
 app.use("/api/media", mediaRoutes);
 app.use("/api/learning-modules", learningModulesRoutes);
 app.use("/api/lessons", lessonsRoutes);
-
+app.use("/api/newsletter", newsletterRoutes);
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found." });
 });

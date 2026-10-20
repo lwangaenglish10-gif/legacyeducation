@@ -86,6 +86,11 @@ export const api = {
   adminTest: () => request('/users/admin-test'),
 
   getContent: () => request('/content'),
+  subscribeNewsletter: (email, consent) =>
+  request('/newsletter', {
+    method: 'POST',
+    body: JSON.stringify({ email, consent }),
+  }),
   createContent: (content) =>
     request('/content', {
       method: 'POST',
