@@ -10,13 +10,13 @@ import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import LearningModule from './pages/LearningModule.jsx'
-
+import Stories from './pages/Stories.jsx'
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-
+        <Route path="/stories" element={<Stories />} />
         <Route path="/login" element={<Login />} />
 
         <Route path="/register" element={<Register />} />
