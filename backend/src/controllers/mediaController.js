@@ -123,6 +123,7 @@ async function uploadFile(req, res, next) {
   }
 }
 
+
 async function listPublished(req, res, next) {
   try {
     const { type } = req.query;
@@ -133,15 +134,7 @@ async function listPublished(req, res, next) {
       });
     }
 
-async function listAllForAdmin(req, res, next) {
-  try {
-    if (req.user?.role !== "admin") {
-      return res.status(403).json({
-        message: "Only administrators can view the media library.",
-      });
-    }
-
-    const media = await mediaModel.getAllMedia();
+    const media = await mediaModel.getPublishedMedia({ type });
 
     return res.json({
       count: media.length,
@@ -152,7 +145,15 @@ async function listAllForAdmin(req, res, next) {
   }
 }
 
-    const media = await mediaModel.getPublishedMedia({ type });
+async function listAllForAdmin(req, res, next) {
+  try {
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({
+        message: "Only administrators can view the media library.",
+      });
+    }
+
+    const media = await mediaModel.getAllMedia();
 
     return res.json({
       count: media.length,
