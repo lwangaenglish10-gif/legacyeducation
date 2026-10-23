@@ -133,6 +133,25 @@ async function listPublished(req, res, next) {
       });
     }
 
+async function listAllForAdmin(req, res, next) {
+  try {
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({
+        message: "Only administrators can view the media library.",
+      });
+    }
+
+    const media = await mediaModel.getAllMedia();
+
+    return res.json({
+      count: media.length,
+      media,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
     const media = await mediaModel.getPublishedMedia({ type });
 
     return res.json({
@@ -386,6 +405,7 @@ async function remove(req, res, next) {
 module.exports = {
   uploadFile,
   listPublished,
+  listAllForAdmin,
   getOne,
   create,
   update,

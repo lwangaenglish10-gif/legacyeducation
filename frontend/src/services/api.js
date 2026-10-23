@@ -96,15 +96,31 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(content),
     }),
+  
   getMedia: () => request('/media'),
-uploadMedia: (formData) =>
-  request('/media/upload', {
-    method: 'POST',
-    body: formData,
-  }),
+
+  uploadMedia: (formData) =>
+    request('/media/upload', {
+      method: 'POST',
+      body: formData,
+    }),
+
+  // Admin: retrieve all media, including drafts
+  getAdminMedia: () => request('/media/admin/library'),
+
+  // Admin: publish or unpublish a media item
+  updateMedia: (id, fields) =>
+    request(`/media/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(fields),
+    }),
+
   getLearningModules: () => request('/learning-modules'),
+
   getLearningModule: (moduleId) =>
     request(`/learning-modules/${encodeURIComponent(moduleId)}`),
+
+  
   getLessons: (moduleId) =>
     request(`/lessons/module/${encodeURIComponent(moduleId)}`),
 }

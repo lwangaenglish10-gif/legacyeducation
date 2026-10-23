@@ -6,6 +6,7 @@ const fs = require("fs");
 const {
   create,
   listPublished,
+  listAllForAdmin,
   getOne,
   update,
   remove,
@@ -45,6 +46,7 @@ router.get("/files/:filename", (req, res, next) => {
 });
 
 // Public routes
+router.get("/admin/library", protect, listAllForAdmin);
 router.get("/", listPublished);
 
 // Public can view published media; owners/admins can view their drafts.

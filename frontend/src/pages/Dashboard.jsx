@@ -25,6 +25,13 @@ const [mediaFile, setMediaFile] = useState(null)
 const [uploadingMedia, setUploadingMedia] = useState(false)
 const [mediaMessage, setMediaMessage] = useState('')
 const [mediaError, setMediaError] = useState(false)
+
+const [adminMedia, setAdminMedia] = useState([])
+const [loadingAdminMedia, setLoadingAdminMedia] = useState(false)
+const [publishingMediaId, setPublishingMediaId] = useState(null)
+const [adminMediaMessage, setAdminMediaMessage] = useState('')
+const [adminMediaError, setAdminMediaError] = useState(false)
+
   useEffect(() => {
     let active = true
 
@@ -81,6 +88,34 @@ const [mediaError, setMediaError] = useState(false)
                 learningModulesData.data ||
                 []
         )
+        
+if (verifiedUser.role === 'admin') {
+  setLoadingAdminMedia(true)
+
+  try {
+    const adminMediaData = await api.getAdminMedia()
+
+    if (!active) return
+
+    setAdminMedia(
+      Array.isArray(adminMediaData)
+        ? adminMediaData
+        : adminMediaData.media || adminMediaData.data || []
+    )
+  } catch (adminErr) {
+    if (!active) return
+
+    setAdminMediaMessage(
+      adminErr.message || 'Could not load the administrator media library.'
+    )
+    setAdminMediaError(true)
+  } finally {
+    if (active) {
+      setLoadingAdminMedia(false)
+    }
+  }
+}
+
       } catch (err) {
         if (!active) return
 
@@ -197,6 +232,55 @@ const [mediaError, setMediaError] = useState(false)
       )
     } finally {
       setUploadingMedia(false)
+    }
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('legacyeducation_token')
+    localStorage.removeItem('legacyeducation_user')
+    navigate('/login', { replace: true })
+  }
+
+
+  // NEW FUNCTION: publish or unpublish uploaded media
+  async function handleMediaPublication(item) {
+    const nextStatus =
+      item.status === 'published' ? 'draft' : 'published'
+
+    setPublishingMediaId(item.id)
+    setAdminMediaMessage('')
+    setAdminMediaError(false)
+
+    try {
+      await api.updateMedia(item.id, { status: nextStatus })
+
+      const updatedAdminMedia = await api.getAdminMedia()
+      const updatedPublicMedia = await api.getMedia()
+
+      setAdminMedia(
+        Array.isArray(updatedAdminMedia)
+          ? updatedAdminMedia
+          : updatedAdminMedia.media || updatedAdminMedia.data || []
+      )
+
+      setMedia(
+        Array.isArray(updatedPublicMedia)
+          ? updatedPublicMedia
+          : updatedPublicMedia.media || updatedPublicMedia.data || []
+      )
+
+      setAdminMediaMessage(
+        nextStatus === 'published'
+          ? 'Media published successfully.'
+          : 'Media moved back to drafts.'
+      )
+    } catch (err) {
+      setAdminMediaMessage(
+        err.message || 'Could not update media publication status.'
+      )
+      setAdminMediaError(true)
+    } finally {
+      setPublishingMediaId(null)
     }
   }
 
@@ -447,6 +531,68 @@ const [mediaError, setMediaError] = useState(false)
     )}
   </form>
 </section>
+
+{user.role === 'admin' && (
+  <section className="dashboard-section">
+    <div className="dashboard-section-heading">
+      <p className="eyebrow">ADMINISTRATION</p>
+      <h2>Media Library</h2>
+      <p>Review uploaded files and publish approved work.</p>
+    </div>
+
+    {adminMediaMessage && (
+      <p
+        role="status"
+        aria-live="polite"
+        style={{ color: adminMediaError ? 'crimson' : 'green' }}
+      >
+        {adminMediaMessage}
+      </p>
+    )}
+
+    {loadingAdminMedia ? (
+      <p>Loading media library...</p>
+    ) : adminMedia.length === 0 ? (
+      <p>No uploaded files found.</p>
+    ) : (
+      <div className="dashboard-media-list">
+        {adminMedia.map((item) => (
+          <article key={item.id} className="dashboard-media-item">
+            <h3>{item.title}</h3>
+
+            {item.description && <p>{item.description}</p>}
+
+            <p>
+              Status: <strong>{item.status}</strong>
+            </p>
+
+            <p>Type: {item.media_type}</p>
+
+            <a
+              href={item.file_url}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Open file
+            </a>
+
+            <button
+              type="button"
+              disabled={publishingMediaId === item.id}
+              onClick={() => handleMediaPublication(item)}
+            >
+              {publishingMediaId === item.id
+                ? 'Updating...'
+                : item.status === 'published'
+                  ? 'Unpublish'
+                  : 'Publish'}
+            </button>
+          </article>
+        ))}
+      </div>
+    )}
+  </section>
+)}
 
       <section className="dashboard-section">
         <div className="dashboard-section-heading">

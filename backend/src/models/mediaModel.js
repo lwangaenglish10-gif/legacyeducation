@@ -56,7 +56,15 @@ async function getPublishedMedia({ type } = {}) {
   const result = await pool.query(query, [type || null]);
   return result.rows;
 }
+async function getAllMedia() {
+  const result = await pool.query(`
+    SELECT *
+    FROM media
+    ORDER BY created_at DESC
+  `);
 
+  return result.rows;
+}
 async function getMediaById(id) {
   const result = await pool.query(
     "SELECT * FROM media WHERE id = $1",
@@ -119,6 +127,7 @@ async function deleteMedia(id) {
 module.exports = {
   createMedia,
   getPublishedMedia,
+  getAllMedia,
   getMediaById,
   updateMedia,
   deleteMedia,
