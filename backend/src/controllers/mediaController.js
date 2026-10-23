@@ -248,7 +248,7 @@ async function create(req, res, next) {
       thumbnail_url: thumbnail_url || null,
       mime_type: mime_type || null,
       file_size_bytes: file_size_bytes ?? null,
-      status: status === "published" ? "published" : "draft",
+      status: "draft",
       uploaded_by: userId,
     });
 
