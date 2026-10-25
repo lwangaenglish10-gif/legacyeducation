@@ -88,6 +88,35 @@ export const api = {
   // Published stories and articles
   getContent: () => request('/content'),
 
+  // Published media library
+  getMedia: () => request('/media'),
+
+  // Learning modules
+  getLearningModules: () => request('/learning-modules'),
+
+  // Admin: retrieve all media, including drafts
+  getAdminMedia: () => request('/media/admin/library'),
+
+  // Upload a file with its title and description
+  uploadMedia: (formData) =>
+    request('/media/upload', {
+      method: 'POST',
+      body: formData,
+    }),
+
+  // Admin: update media details or publication status
+  updateMedia: (id, fields) =>
+    request(`/media/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(fields),
+    }),
+
+  // Admin: delete a media database record
+  deleteMedia: (id) =>
+    request(`/media/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }),
+
   // Student: retrieve your own submissions
   getMyContent: () => request('/content/my-submissions'),
 
