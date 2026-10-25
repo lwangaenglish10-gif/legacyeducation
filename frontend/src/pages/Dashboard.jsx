@@ -13,7 +13,14 @@ function Dashboard() {
   const [checking, setChecking] = useState(true)
   const [loadingContent, setLoadingContent] = useState(true)
   const [error, setError] = useState('')
+const [mySubmissions, setMySubmissions] = useState([])
+const [loadingSubmissions, setLoadingSubmissions] = useState(true)
 
+const [reviewArticles, setReviewArticles] = useState([])
+const [loadingReviewArticles, setLoadingReviewArticles] = useState(false)
+const [publishingArticleId, setPublishingArticleId] = useState(null)
+const [reviewMessage, setReviewMessage] = useState('')
+const [reviewError, setReviewError] = useState(false)
   const [articleTitle, setArticleTitle] = useState('')
   const [articleBody, setArticleBody] = useState('')
   const [submittingArticle, setSubmittingArticle] = useState(false)
@@ -89,7 +96,51 @@ const [adminMediaError, setAdminMediaError] = useState(false)
                 learningModulesData.data ||
                 []
         )
-        
+        try {
+  const submissionsData = await api.getMyContent()
+
+  if (!active) return
+
+  setMySubmissions(
+    Array.isArray(submissionsData)
+      ? submissionsData
+      : submissionsData.content || submissionsData.data || []
+  )
+} catch (err) {
+  if (!active) return
+
+  setArticleMessage(
+    err.message || 'Could not load your article submissions.'
+  )
+  setArticleError(true)
+} finally {
+  if (active) setLoadingSubmissions(false)
+}
+
+if (verifiedUser.role === 'admin') {
+  setLoadingReviewArticles(true)
+
+  try {
+    const reviewData = await api.getAdminContent()
+
+    if (!active) return
+
+    setReviewArticles(
+      Array.isArray(reviewData)
+        ? reviewData
+        : reviewData.content || reviewData.data || []
+    )
+  } catch (err) {
+    if (!active) return
+
+    setReviewMessage(
+      err.message || 'Could not load articles awaiting review.'
+    )
+    setReviewError(true)
+  } finally {
+    if (active) setLoadingReviewArticles(false)
+  }
+}
 if (verifiedUser.role === 'admin') {
   setLoadingAdminMedia(true)
 
@@ -151,7 +202,80 @@ if (verifiedUser.role === 'admin') {
       active = false
     }
   }, [navigate])
+async function refreshMySubmissions() {
+  setLoadingSubmissions(true)
 
+  try {
+    const result = await api.getMyContent()
+    setMySubmissions(
+      Array.isArray(result)
+        ? result
+        : result.content || result.data || []
+    )
+  } catch (err) {
+    setArticleMessage(
+      err.message || 'Could not load your article submissions.'
+    )
+    setArticleError(true)
+  } finally {
+    setLoadingSubmissions(false)
+  }
+}
+
+async function refreshArticlesForReview() {
+  setLoadingReviewArticles(true)
+  setReviewMessage('')
+  setReviewError(false)
+
+  try {
+    const result = await api.getAdminContent()
+
+    setReviewArticles(
+      Array.isArray(result)
+        ? result
+        : result.content || result.data || []
+    )
+  } catch (err) {
+    setReviewMessage(
+      err.message || 'Could not load articles awaiting review.'
+    )
+    setReviewError(true)
+  } finally {
+    setLoadingReviewArticles(false)
+  }
+}
+
+async function handleArticlePublication(item) {
+  setPublishingArticleId(item.id)
+  setReviewMessage('')
+  setReviewError(false)
+
+  try {
+    await api.updateContent(item.id, { status: 'published' })
+
+    await Promise.all([
+      refreshArticlesForReview(),
+      refreshMySubmissions(),
+    ])
+
+    const publishedContent = await api.getContent()
+
+    setContent(
+      Array.isArray(publishedContent)
+        ? publishedContent
+        : publishedContent.content || publishedContent.data || []
+    )
+
+    setReviewMessage(`"${item.title}" has been published successfully.`)
+  } catch (err) {
+    setReviewMessage(
+      err.message || 'Could not publish this article.'
+    )
+    setReviewError(true)
+  } finally {
+    setPublishingArticleId(null)
+  }
+}
   async function handleArticleSubmit(event) {
     event.preventDefault()
 
@@ -176,8 +300,24 @@ if (verifiedUser.role === 'admin') {
       setArticleTitle('')
       setArticleBody('')
       setArticleMessage(
-        'Your article has been submitted successfully for review.'
-      )
+  'Your article has been submitted successfully for review.'
+)
+
+setArticleError(false)
+
+try {
+  const result = await api.getMyContent()
+
+  setMySubmissions(
+    Array.isArray(result)
+      ? result
+      : result.content || result.data || []
+  )
+} catch (err) {
+  setArticleMessage(
+    'Your article was submitted, but the submission list could not refresh.'
+  )
+}
     } catch (err) {
       setArticleError(true)
       setArticleMessage(
@@ -466,7 +606,103 @@ async function handleMediaDeletion(item) {
           </div>
         )}
       </section>
+{/* MY ARTICLE SUBMISSIONS */}
 
+<section id="my-submissions" className="dashboard-section">
+  <div className="dashboard-section-heading">
+    <p className="eyebrow">YOUR CREATIVE WORK</p>
+    <h2>My Submissions</h2>
+    <p>Track the articles you have shared with LegacyEducation.</p>
+  </div>
+
+  {loadingSubmissions ? (
+    <p>Loading your submissions...</p>
+  ) : mySubmissions.length === 0 ? (
+    <p>You have not submitted any articles yet.</p>
+  ) : (
+    <div className="dashboard-list">
+      {mySubmissions.map((item) => (
+        <article className="dashboard-item" key={item.id}>
+          <p className="dashboard-item-type">
+            {(item.content_type || 'article').toUpperCase()}
+          </p>
+
+          <h3>{item.title}</h3>
+
+          <p>
+            Status: <strong>{item.status || 'draft'}</strong>
+          </p>
+
+          {item.body && (
+            <p>
+              {item.body.length > 180
+                ? `${item.body.substring(0, 180)}...`
+                : item.body}
+            </p>
+          )}
+        </article>
+      ))}
+    </div>
+  )}
+</section>
+{/* ADMIN ARTICLE REVIEW */}
+
+{user.role === 'admin' && (
+  <section id="article-review" className="dashboard-section">
+    <div className="dashboard-section-heading">
+      <p className="eyebrow">EDITORIAL WORKSPACE</p>
+      <h2>Article Review</h2>
+      <p>Review submitted articles before making them public.</p>
+    </div>
+
+    {reviewMessage && (
+      <p
+        role={reviewError ? 'alert' : 'status'}
+        aria-live="polite"
+      >
+        {reviewMessage}
+      </p>
+    )}
+
+    {loadingReviewArticles ? (
+      <p>Loading articles awaiting review...</p>
+    ) : reviewArticles.length === 0 ? (
+      <p>No articles are awaiting review.</p>
+    ) : (
+      <div className="dashboard-list">
+        {reviewArticles.map((item) => (
+          <article className="dashboard-item" key={item.id}>
+            <p className="dashboard-item-type">ARTICLE</p>
+
+            <h3>{item.title}</h3>
+
+            {item.author_name && (
+              <p>Submitted by {item.author_name}</p>
+            )}
+
+            <p>
+              {item.body}
+            </p>
+
+            <p>
+              Status: <strong>{item.status}</strong>
+            </p>
+
+            <button
+              type="button"
+              disabled={publishingArticleId === item.id}
+              onClick={() => handleArticlePublication(item)}
+            >
+              {publishingArticleId === item.id
+                ? 'Publishing...'
+                : 'Publish Article'}
+            </button>
+          </article>
+        ))}
+      </div>
+    )}
+  </section>
+)}
       {/* SUBMIT AN ARTICLE */}
 
       <section id="submit-article" className="dashboard-section">
@@ -670,15 +906,26 @@ async function handleMediaDeletion(item) {
                   <p>{item.description}</p>
                 )}
 
+
 {item.file_url && (
   <a
-    href={item.file_url}
+    href={
+      item.mime_type ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+      (item.original_name || item.filename || "").toLowerCase().endsWith(".docx")
+        ? `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(item.file_url)}`
+        : item.file_url
+    }
     target="_blank"
     rel="noopener noreferrer"
   >
-    Open media {'→'}
+    {item.mime_type ===
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ? "Preview document →"
+      : "Open media →"}
   </a>
 )}
+
               </article>
             ))}
           </div>

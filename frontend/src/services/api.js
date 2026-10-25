@@ -85,49 +85,27 @@ export const api = {
 
   adminTest: () => request('/users/admin-test'),
 
+  // Published stories and articles
   getContent: () => request('/content'),
-  subscribeNewsletter: (email, consent) =>
-  request('/newsletter', {
-    method: 'POST',
-    body: JSON.stringify({ email, consent }),
-  }),
-  createContent: (content) =>
-    request('/content', {
-      method: 'POST',
-      body: JSON.stringify(content),
-    }),
-  
-  getMedia: () => request('/media'),
 
-  uploadMedia: (formData) =>
-    request('/media/upload', {
-      method: 'POST',
-      body: formData,
-    }),
+  // Student: retrieve your own submissions
+  getMyContent: () => request('/content/my-submissions'),
 
-  // Admin: retrieve all media, including drafts
-  getAdminMedia: () => request('/media/admin/library'),
+  // Admin: retrieve articles awaiting review
+  getAdminContent: () => request('/content/admin/review'),
 
-  // Admin: publish or unpublish a media item
-  updateMedia: (id, fields) =>
-    request(`/media/${encodeURIComponent(id)}`, {
+  // Admin: publish an approved article
+  updateContent: (id, fields) =>
+    request(`/content/${encodeURIComponent(id)}`, {
       method: 'PATCH',
       body: JSON.stringify(fields),
     }),
-    // Admin: delete a media item
-deleteMedia: (id) =>
-  request(`/media/${encodeURIComponent(id)}`, {
-    method: 'DELETE',
-  }),
 
-  getLearningModules: () => request('/learning-modules'),
-
-  getLearningModule: (moduleId) =>
-    request(`/learning-modules/${encodeURIComponent(moduleId)}`),
-
-  
-  getLessons: (moduleId) =>
-    request(`/lessons/module/${encodeURIComponent(moduleId)}`),
+  subscribeNewsletter: (email, consent) =>
+    request('/newsletter', {
+      method: 'POST',
+      body: JSON.stringify({ email, consent }),
+        }),
 }
 
 export default api

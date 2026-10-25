@@ -1,4 +1,3 @@
-
 const express = require("express");
 
 const {
@@ -7,20 +6,26 @@ const {
   getOne,
   update,
   remove,
+  listMySubmissions,
+  listForAdminReview,
 } = require("../controllers/contentController");
 
 const protect = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// Public routes: published content only
+// Public route: published content only
 router.get("/", listPublished);
+
+// Protected routes must come before /:id
+router.get("/my-submissions", protect, listMySubmissions);
+router.get("/admin/review", protect, listForAdminReview);
+
+// Existing individual content route
 router.get("/:id", getOne);
 
-// Protected routes: a logged-in user must create content
+// Authenticated content operations
 router.post("/", protect, create);
-
-// Protected routes: the author or an administrator may modify content
 router.patch("/:id", protect, update);
 router.delete("/:id", protect, remove);
 

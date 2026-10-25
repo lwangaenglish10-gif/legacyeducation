@@ -2,11 +2,12 @@
 const {
   createContent,
   getPublishedContent,
+  getContentByAuthor,
+  getContentForReview,
   getContentById,
   updateContent,
   deleteContent,
 } = require("../models/contentModel");
-
 const validTypes = ["story", "article"];
 const validStatuses = ["draft", "published"];
 
@@ -50,7 +51,7 @@ const create = async (req, res) => {
       body: body.trim(),
       content_type,
       author_id: req.user.id,
-      status: status || "draft",
+    status: req.user.role === "admin" ? (status || "draft") : "draft",
     });
 
     return res.status(201).json({
@@ -97,7 +98,47 @@ const listPublished = async (req, res) => {
     });
   }
 };
+// List content submitted by the currently logged-in user
+const listMySubmissions = async (req, res) => {
+  try {
+    const content = await getContentByAuthor(req.user.id);
 
+    return res.status(200).json({
+      count: content.length,
+      content,
+    });
+  } catch (error) {
+    console.error("List own submissions error:", error.message);
+
+    return res.status(500).json({
+      message: "Unable to retrieve your submissions.",
+    });
+  }
+};
+
+// List draft articles awaiting administrator review
+const listForAdminReview = async (req, res) => {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({
+      message: "Only administrators can review submissions.",
+    });
+  }
+
+  try {
+    const content = await getContentForReview();
+
+    return res.status(200).json({
+      count: content.length,
+      content,
+    });
+  } catch (error) {
+    console.error("Admin review list error:", error.message);
+
+    return res.status(500).json({
+      message: "Unable to retrieve articles for review.",
+    });
+  }
+};
 // View one published story or article
 const getOne = async (req, res) => {
   try {
@@ -183,13 +224,18 @@ const update = async (req, res) => {
         message: "Content type must be story or article.",
       });
     }
-
-    if (
-      status !== undefined &&
-      !validStatuses.includes(status)
-    ) {
-      return res.status(400).json({
-        message: "Status must be draft or published.",
+if (
+  status !== undefined &&
+  !validStatuses.includes(status)
+) {
+  return res.status(400).json({
+    message: "Status must be draft or published.",
+  });
+}
+    // Only administrators may change publication status.
+    if (status !== undefined && req.user.role !== "admin") {
+      return res.status(403).json({
+        message: "Only administrators can change publication status.",
       });
     }
 
@@ -278,10 +324,12 @@ const remove = async (req, res) => {
     });
   }
 };
-
+// A logged-in user can retrieve only their own submissions
 module.exports = {
   create,
   listPublished,
+  listMySubmissions,
+  listForAdminReview,
   getOne,
   update,
   remove,

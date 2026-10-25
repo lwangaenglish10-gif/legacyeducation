@@ -74,7 +74,55 @@ const getPublishedContent = async (contentType = null) => {
   const result = await pool.query(query, values);
   return result.rows;
 };
+const getContentByAuthor = async (authorId) => {
+  const result = await pool.query(
+    `
+      SELECT
+        c.id,
+        c.title,
+        c.slug,
+        c.body,
+        c.content_type,
+        c.status,
+        c.author_id,
+        c.created_at,
+        c.updated_at,
+        u.full_name AS author_name
+      FROM content c
+      JOIN users u ON c.author_id = u.id
+      WHERE c.author_id = $1
+      ORDER BY c.created_at DESC
+    `,
+    [authorId]
+  );
 
+  return result.rows;
+};
+
+const getContentForReview = async () => {
+  const result = await pool.query(
+    `
+      SELECT
+        c.id,
+        c.title,
+        c.slug,
+        c.body,
+        c.content_type,
+        c.status,
+        c.author_id,
+        c.created_at,
+        c.updated_at,
+        u.full_name AS author_name
+      FROM content c
+      JOIN users u ON c.author_id = u.id
+      WHERE c.status = 'draft'
+        AND c.content_type = 'article'
+      ORDER BY c.created_at ASC
+    `
+  );
+
+  return result.rows;
+};
 const getContentById = async (id) => {
   const result = await pool.query(
     `SELECT * FROM content WHERE id = $1`,
@@ -131,10 +179,14 @@ const deleteContent = async (id) => {
 
   return result.rows[0];
 };
+// Retrieve a student's own stories and articles
 
+// Retrieve unpublished stories and articles for administrator review
 module.exports = {
   createContent,
   getPublishedContent,
+  getContentByAuthor,
+  getContentForReview,
   getContentById,
   updateContent,
   deleteContent,
