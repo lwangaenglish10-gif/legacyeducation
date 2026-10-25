@@ -114,6 +114,11 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify(fields),
     }),
+    // Admin: delete a media item
+deleteMedia: (id) =>
+  request(`/media/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  }),
 
   getLearningModules: () => request('/learning-modules'),
 

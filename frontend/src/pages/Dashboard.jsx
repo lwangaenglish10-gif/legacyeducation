@@ -29,6 +29,7 @@ const [mediaError, setMediaError] = useState(false)
 const [adminMedia, setAdminMedia] = useState([])
 const [loadingAdminMedia, setLoadingAdminMedia] = useState(false)
 const [publishingMediaId, setPublishingMediaId] = useState(null)
+const [deletingMediaId, setDeletingMediaId] = useState(null)
 const [adminMediaMessage, setAdminMediaMessage] = useState('')
 const [adminMediaError, setAdminMediaError] = useState(false)
 
@@ -283,6 +284,46 @@ if (verifiedUser.role === 'admin') {
       setPublishingMediaId(null)
     }
   }
+
+async function handleMediaDeletion(item) {
+  const confirmed = window.confirm(
+    `Delete "${item.title}" from the LegacyEducation media library? This removes its database record but does not delete the Cloudinary file.`
+  )
+
+  if (!confirmed) return
+
+  setDeletingMediaId(item.id)
+  setAdminMediaMessage('')
+  setAdminMediaError(false)
+
+  try {
+    await api.deleteMedia(item.id)
+
+    const updatedAdminMedia = await api.getAdminMedia()
+    const updatedPublicMedia = await api.getMedia()
+
+    setAdminMedia(
+      Array.isArray(updatedAdminMedia)
+        ? updatedAdminMedia
+        : updatedAdminMedia.media || updatedAdminMedia.data || []
+    )
+
+    setMedia(
+      Array.isArray(updatedPublicMedia)
+        ? updatedPublicMedia
+        : updatedPublicMedia.media || updatedPublicMedia.data || []
+    )
+
+    setAdminMediaMessage('Media record deleted successfully.')
+  } catch (err) {
+    setAdminMediaMessage(
+      err.message || 'Could not delete this media record.'
+    )
+    setAdminMediaError(true)
+  } finally {
+    setDeletingMediaId(null)
+  }
+}
 
   function handleLogout() {
     localStorage.removeItem('legacyeducation_token')
@@ -587,6 +628,17 @@ if (verifiedUser.role === 'admin') {
                   ? 'Unpublish'
                   : 'Publish'}
             </button>
+<button
+  type="button"
+  disabled={
+    publishingMediaId === item.id ||
+    deletingMediaId === item.id
+  }
+  onClick={() => handleMediaDeletion(item)}
+>
+  {deletingMediaId === item.id ? 'Deleting...' : 'Delete'}
+</button>
+
           </article>
         ))}
       </div>
@@ -620,7 +672,6 @@ if (verifiedUser.role === 'admin') {
 
                 {item.file_url && (
                   <a
-                    href={api.mediaUrl(item.file_url)}
                     target="_blank"
                     rel="noreferrer"
                   >
