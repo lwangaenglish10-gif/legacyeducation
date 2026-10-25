@@ -670,14 +670,15 @@ async function handleMediaDeletion(item) {
                   <p>{item.description}</p>
                 )}
 
-                {item.file_url && (
-                  <a
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Open media {'→'}
-                  </a>
-                )}
+{item.file_url && (
+  <a
+    href={item.file_url}
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    Open media {'→'}
+  </a>
+)}
               </article>
             ))}
           </div>
