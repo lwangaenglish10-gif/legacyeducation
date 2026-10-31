@@ -19,12 +19,10 @@ const optionalAuth = require("../middleware/optionalAuthMiddleware");
 const upload = require("../config/upload");
 
 const router = express.Router();
-
 const uploadDirectory = path.resolve(__dirname, "../../uploads");
 
 router.get("/files/:filename", (req, res, next) => {
   const { filename } = req.params;
-
   const allowedFilename =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|gif|mp4|webm|mp3|wav|ogg|pdf|txt|doc|docx|ppt|pptx)$/i;
 
@@ -33,7 +31,6 @@ router.get("/files/:filename", (req, res, next) => {
   }
 
   const filePath = path.join(uploadDirectory, filename);
-
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ message: "File not found." });
   }
@@ -46,10 +43,11 @@ router.get("/files/:filename", (req, res, next) => {
 // Public routes.
 router.get("/:id/download", optionalAuth, downloadPdf);
 router.get("/", listPublished);
+router.get("/admin/library", protect, authorize("admin"), listAllForAdmin);
 router.get("/:id", optionalAuth, getOne);
 
 // Only administrators or trusted teachers may create/upload learning media.
-// Publication is still restricted inside the controller to administrators.
+// Publication remains restricted inside the controller to administrators.
 router.post("/", protect, authorize("admin", "teacher"), create);
 router.post(
   "/upload",
@@ -59,7 +57,6 @@ router.post(
   uploadFile
 );
 
-router.get("/admin/library", protect, authorize("admin"), listAllForAdmin);
 router.patch("/:id", protect, update);
 router.delete("/:id", protect, remove);
 
