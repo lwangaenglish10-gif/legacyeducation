@@ -20,23 +20,41 @@ function LearnerDashboard() {
         return
       }
       try {
-        const [me, moduleResult, progressResult, mediaResult] = await Promise.all([
+        const [meResult, moduleResult, progressResult, mediaResult] = await Promise.allSettled([
           api.getMe(),
           api.getLearningModules(),
           api.getLessonProgress(),
           api.getMedia(),
         ])
         if (!active) return
+
+        // Authentication and published modules are essential to the learning space.
+        if (meResult.status === 'rejected') throw meResult.reason
+        if (moduleResult.status === 'rejected') throw moduleResult.reason
+
+        const me = meResult.value
         const currentUser = me.user || me
         setUser(currentUser)
         localStorage.setItem('legacyeducation_user', JSON.stringify(currentUser))
-        setModules(moduleResult.modules || moduleResult.data || [])
-        setProgress(progressResult.modules || [])
-        const media = mediaResult.media || mediaResult.data || []
-        setBooks(media.filter((item) =>
-          item.mime_type === 'application/pdf' ||
-          (item.media_type === 'document' && /\.pdf($|\?)/i.test(item.file_url || ''))
-        ).slice(0, 3))
+        setModules(moduleResult.value.modules || moduleResult.value.data || [])
+
+        // Progress and the optional PDF shelf must not block access to lessons.
+        if (progressResult.status === 'fulfilled') {
+          setProgress(progressResult.value.modules || [])
+        } else {
+          console.error('Learning progress is temporarily unavailable:', progressResult.reason)
+          setError('Your courses loaded, but lesson progress is temporarily unavailable.')
+        }
+
+        if (mediaResult.status === 'fulfilled') {
+          const media = mediaResult.value.media || mediaResult.value.data || []
+          setBooks(media.filter((item) =>
+            item.mime_type === 'application/pdf' ||
+            (item.media_type === 'document' && /\.pdf($|\?)/i.test(item.file_url || ''))
+          ).slice(0, 3))
+        } else {
+          console.error('The optional reading shelf could not load:', mediaResult.reason)
+        }
       } catch (err) {
         if (!active) return
         const message = (err.message || '').toLowerCase()
