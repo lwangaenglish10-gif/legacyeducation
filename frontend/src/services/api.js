@@ -131,8 +131,27 @@ export const api = {
       method: 'DELETE',
     }),
 
-  // Learning modules
+  // Learning modules and lessons
   getLearningModules: () => request('/learning-modules'),
+  getLearningModule: (id) =>
+    request(`/learning-modules/${encodeURIComponent(id)}`),
+  createLearningModule: (fields) =>
+    request('/learning-modules', {
+      method: 'POST',
+      body: JSON.stringify(fields),
+    }),
+  getLessons: (moduleId) =>
+    request(`/lessons/module/${encodeURIComponent(moduleId)}`),
+  createLesson: (fields) =>
+    request('/lessons', {
+      method: 'POST',
+      body: JSON.stringify(fields),
+    }),
+  getLessonProgress: () => request('/lessons/progress/modules'),
+  completeLesson: (id) =>
+    request(`/lessons/${encodeURIComponent(id)}/complete`, {
+      method: 'POST',
+    }),
 
   subscribeNewsletter: (email, consent) =>
     request('/newsletter', {
