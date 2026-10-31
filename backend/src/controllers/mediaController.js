@@ -38,8 +38,8 @@ function uploadToCloudinary(file) {
     const originalName = String(file.originalname || "upload")
       .replace(/^.*[\\/]/, "")
       .normalize("NFKD")
-      .replace(/[^\\w.-]/g, "-")
-      .replace(/-+/g, "-")
+      .replace(/[^A-Za-z0-9_.-]/g, "-")
+      .replace(/--+/g, "-")
       .slice(-120);
     const uploadOptions = {
       resource_type: resourceType,
