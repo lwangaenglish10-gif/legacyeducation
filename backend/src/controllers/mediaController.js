@@ -124,6 +124,56 @@ async function uploadFile(req, res, next) {
 }
 
 
+
+async function downloadPdf(req, res, next) {
+  try {
+    const { id } = req.params;
+    if (!/^\d+$/.test(id)) return res.status(400).json({ message: "Invalid media ID." });
+
+    const media = await mediaModel.getMediaById(id);
+    if (!media) return res.status(404).json({ message: "Book not found." });
+    if (media.mime_type !== "application/pdf") {
+      return res.status(415).json({ message: "This file is not a PDF." });
+    }
+
+    const userId = getUserId(req);
+    const isOwner = userId !== null && String(media.uploaded_by) === String(userId);
+    const isAdmin = req.user?.role === "admin";
+    if (media.status !== "published" && !isOwner && !isAdmin) {
+      return res.status(403).json({ message: "This book is not publicly available." });
+    }
+
+    const sourceUrl = new URL(media.file_url);
+    if (sourceUrl.protocol !== "https:" || sourceUrl.hostname !== "res.cloudinary.com") {
+      return res.status(502).json({ message: "The stored PDF location is invalid." });
+    }
+
+    const upstream = await fetch(sourceUrl, { signal: AbortSignal.timeout(45000) });
+    if (!upstream.ok || !upstream.body) {
+      return res.status(502).json({ message: "The PDF could not be retrieved from file storage." });
+    }
+
+    const safeBase = String(media.title || "LegacyEducation-book")
+      .normalize("NFKD")
+      .replace(/[^\w -]/g, "")
+      .trim()
+      .replace(/[\s-]+/g, "-")
+      .slice(0, 100) || "LegacyEducation-book";
+    const filename = safeBase.toLowerCase().endsWith(".pdf") ? safeBase : safeBase + ".pdf";
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`);
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Cache-Control", "public, max-age=300");
+    const contentLength = upstream.headers.get("content-length");
+    if (contentLength) res.setHeader("Content-Length", contentLength);
+
+    Readable.fromWeb(upstream.body).on("error", next).pipe(res);
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function listPublished(req, res, next) {
   try {
     const { type } = req.query;
@@ -405,6 +455,7 @@ async function remove(req, res, next) {
 
 module.exports = {
   uploadFile,
+  downloadPdf,
   listPublished,
   listAllForAdmin,
   getOne,
