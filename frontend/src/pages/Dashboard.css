@@ -795,3 +795,54 @@
     padding: 18px;
   }
 }
+
+/* Shared brand tokens and refined responsive dashboard layout */
+.dashboard-page {
+  --dashboard-green: #174d3b;
+  --dashboard-deep: #123d31;
+  --dashboard-sage: #6a8750;
+  --dashboard-paper: #fbfaf6;
+  --dashboard-line: #e5e9e1;
+  width: 100%;
+  max-width: none;
+  padding: clamp(18px, 4vw, 40px) clamp(16px, 5vw, 72px);
+  background: radial-gradient(circle at 92% 0%, rgba(220,232,213,.55), transparent 26rem), var(--dashboard-paper);
+  color: #1c3028;
+}
+.dashboard-page > * { width: min(100%, 1180px); }
+.dashboard-header { align-items: center; gap: 16px; flex-wrap: wrap; }
+.dashboard-brand { color: var(--dashboard-deep); }
+.dashboard-brand span { color: var(--dashboard-sage); }
+.dashboard-hero { border-radius: 24px; padding: clamp(28px, 5vw, 58px); }
+.dashboard-quick-nav { position: sticky; top: 8px; z-index: 10; }
+.dashboard-section-heading h2, .dashboard-item h3, .dashboard-media-item h3 { overflow-wrap: anywhere; }
+.dashboard-item, .dashboard-media-item, .dashboard-article-form, .learning-manager-card { border-radius: 16px; }
+.dashboard-button, .dashboard-article-form button, .dashboard-media-item button { min-height: 44px; }
+.dashboard-page input, .dashboard-page textarea, .dashboard-page select { font-size: 16px; }
+.dashboard-modal { width: min(760px, 100%); }
+@media (max-width: 600px) {
+  .dashboard-page { padding: 16px 14px 30px; }
+  .dashboard-header { align-items: stretch; flex-direction: column; margin-bottom: 22px; }
+  .dashboard-header-actions { justify-content: space-between; gap: 10px; }
+  .dashboard-user { max-width: 70%; overflow-wrap: anywhere; }
+  .dashboard-hero { padding: 30px 22px; border-radius: 18px; margin-bottom: 18px; }
+  .dashboard-hero h1 { font-size: clamp(2.15rem, 10vw, 3rem); line-height: 1.03; }
+  .dashboard-hero p { font-size: .98rem; }
+  .dashboard-quick-nav { position: static; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 4px; padding: 8px; border-radius: 14px; }
+  .dashboard-quick-nav a { text-align: center; padding: 10px 6px; font-size: .82rem; }
+  .dashboard-overview { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; margin-bottom: 34px; }
+  .dashboard-overview article { min-width: 0; padding: 14px; border-radius: 13px; }
+  .dashboard-overview strong { font-size: 1.55rem; }
+  .dashboard-overview span { font-size: .75rem; }
+  .dashboard-section { margin-bottom: 38px; }
+  .dashboard-section-heading h2 { font-size: 1.55rem; }
+  .dashboard-list, .dashboard-media-list { grid-template-columns: 1fr; gap: 13px; }
+  .dashboard-item, .dashboard-media-item { padding: 19px; min-height: 0; }
+  .dashboard-article-form, .learning-manager-card { padding: 18px; border-radius: 14px; }
+  .dashboard-article-form button, .learning-manager-card .dashboard-button { width: 100%; justify-content: center; }
+  .dashboard-card-actions { display: grid; grid-template-columns: 1fr; }
+  .dashboard-card-actions .dashboard-button { width: 100%; }
+  .dashboard-modal-backdrop { padding: 10px; align-items: end; }
+  .dashboard-modal { max-height: 92dvh; padding: 18px; border-radius: 18px 18px 12px 12px; }
+  .dashboard-modal-heading h2 { font-size: 1.4rem; }
+}
