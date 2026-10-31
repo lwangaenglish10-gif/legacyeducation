@@ -11,6 +11,7 @@ const {
   update,
   remove,
   uploadFile,
+  downloadPdf,
 } = require("../controllers/mediaController");
 
 const protect = require("../middleware/authMiddleware");
@@ -46,6 +47,7 @@ router.get("/files/:filename", (req, res, next) => {
 });
 
 // Public routes
+router.get("/:id/download", optionalAuth, downloadPdf);
 router.get("/admin/library", protect, listAllForAdmin);
 router.get("/", listPublished);
 
