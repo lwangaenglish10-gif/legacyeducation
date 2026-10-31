@@ -2,6 +2,7 @@
 const mediaModel = require("../models/mediaModel");
 const cloudinary = require("../config/cloudinary");
 const { Readable } = require("stream");
+const { randomUUID } = require("crypto");
 
 const validTypes = ["image", "video", "audio", "document"];
 
@@ -34,13 +35,30 @@ function uploadToCloudinary(file) {
         ? "video"
         : "raw";
 
+    const originalName = String(file.originalname || "upload")
+      .replace(/^.*[\\/]/, "")
+      .normalize("NFKD")
+      .replace(/[^\\w.-]/g, "-")
+      .replace(/-+/g, "-")
+      .slice(-120);
+    const uploadOptions = {
+      resource_type: resourceType,
+      folder: "legacyeducation/media",
+      ...(resourceType === "raw"
+        ? {
+            // Cloudinary raw assets need the extension in public_id.
+            public_id: `${Date.now()}-${randomUUID()}-${originalName || "document.bin"}`,
+            use_filename: false,
+            unique_filename: false,
+          }
+        : {
+            use_filename: true,
+            unique_filename: true,
+          }),
+    };
+
     const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        resource_type: resourceType,
-        folder: "legacyeducation/media",
-        use_filename: true,
-        unique_filename: true,
-      },
+      uploadOptions,
       (error, result) => {
         if (error) {
           reject(error);
@@ -76,6 +94,13 @@ async function uploadFile(req, res, next) {
     }
 
     const media_type = mediaTypeByMime[req.file.mimetype];
+
+    if (req.file.mimetype === "application/pdf" &&
+        req.file.buffer.subarray(0, 5).toString("ascii") !== "%PDF-") {
+      return res.status(400).json({
+        message: "The selected file does not contain a valid PDF signature.",
+      });
+    }
 
     if (!media_type) {
       return res.status(400).json({
@@ -164,7 +189,7 @@ async function downloadPdf(req, res, next) {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`);
     res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("Cache-Control", "public, max-age=300");
+    res.setHeader("Cache-Control", media.status === "published" ? "public, max-age=300" : "private, no-store");
     const contentLength = upstream.headers.get("content-length");
     if (contentLength) res.setHeader("Content-Length", contentLength);
 
