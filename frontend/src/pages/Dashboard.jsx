@@ -1003,7 +1003,16 @@ async function handleMediaDeletion(item) {
                 )}
 
 
-{item.file_url && (
+{item.file_url && item.mime_type === 'application/pdf' ? (
+  <div className="dashboard-card-actions">
+    <a href={api.mediaDownloadUrl(item.id)} className="dashboard-module-button">
+      Download PDF ↓
+    </a>
+    <a href={item.file_url} target="_blank" rel="noopener noreferrer">
+      Preview book →
+    </a>
+  </div>
+) : item.file_url ? (
   <a
     href={
       item.mime_type ===
@@ -1020,7 +1029,7 @@ async function handleMediaDeletion(item) {
       ? "Preview document →"
       : "Open media →"}
   </a>
-)}
+) : null}
 
               </article>
             ))}
