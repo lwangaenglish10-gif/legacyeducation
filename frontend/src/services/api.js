@@ -149,6 +149,7 @@ export const api = {
       body: JSON.stringify(fields),
     }),
   getLessonProgress: () => request('/lessons/progress/modules'),
+  getCompletedLessons: () => request('/lessons/progress/me'),
   completeLesson: (id) =>
     request(`/lessons/${encodeURIComponent(id)}/complete`, {
       method: 'POST',
