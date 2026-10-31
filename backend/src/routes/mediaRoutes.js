@@ -1,4 +1,3 @@
-
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
@@ -15,6 +14,7 @@ const {
 } = require("../controllers/mediaController");
 
 const protect = require("../middleware/authMiddleware");
+const authorize = require("../middleware/roleMiddleware");
 const optionalAuth = require("../middleware/optionalAuthMiddleware");
 const upload = require("../config/upload");
 
@@ -22,7 +22,6 @@ const router = express.Router();
 
 const uploadDirectory = path.resolve(__dirname, "../../uploads");
 
-// Serve uploaded files using their generated filenames.
 router.get("/files/:filename", (req, res, next) => {
   const { filename } = req.params;
 
@@ -40,23 +39,27 @@ router.get("/files/:filename", (req, res, next) => {
   }
 
   res.sendFile(filePath, (err) => {
-    if (err && !res.headersSent) {
-      next(err);
-    }
+    if (err && !res.headersSent) next(err);
   });
 });
 
-// Public routes
+// Public routes.
 router.get("/:id/download", optionalAuth, downloadPdf);
-router.get("/admin/library", protect, listAllForAdmin);
 router.get("/", listPublished);
-
-// Public can view published media; owners/admins can view their drafts.
 router.get("/:id", optionalAuth, getOne);
 
-// Protected routes
-router.post("/", protect, create);
-router.post("/upload", protect, upload.single("file"), uploadFile);
+// Only administrators or trusted teachers may create/upload learning media.
+// Publication is still restricted inside the controller to administrators.
+router.post("/", protect, authorize("admin", "teacher"), create);
+router.post(
+  "/upload",
+  protect,
+  authorize("admin", "teacher"),
+  upload.single("file"),
+  uploadFile
+);
+
+router.get("/admin/library", protect, authorize("admin"), listAllForAdmin);
 router.patch("/:id", protect, update);
 router.delete("/:id", protect, remove);
 
