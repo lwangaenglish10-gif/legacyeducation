@@ -1,4 +1,3 @@
-
 const express = require('express');
 
 const protect = require('../middleware/authMiddleware');
@@ -12,79 +11,50 @@ const {
 
 const router = express.Router();
 
-// GET /api/learning-modules
-// Get all published learning modules
+// Public: published learning modules only.
 router.get('/', async (req, res) => {
   try {
     const modules = await getPublishedModules();
-
-    res.json({
-      modules,
-    });
+    res.json({ modules });
   } catch (error) {
     console.error('Error fetching learning modules:', error);
-
-    res.status(500).json({
-      message: 'Failed to fetch learning modules.',
-    });
+    res.status(500).json({ message: 'Failed to fetch learning modules.' });
   }
 });
 
-// GET /api/learning-modules/:id
-// Get one published learning module
+// Public: one published learning module.
 router.get('/:id', async (req, res) => {
   try {
     const moduleId = Number(req.params.id);
-
     if (!Number.isInteger(moduleId) || moduleId < 1) {
-      return res.status(400).json({
-        message: 'Invalid module ID.',
-      });
+      return res.status(400).json({ message: 'Invalid module ID.' });
     }
 
     const module = await getModuleById(moduleId);
-
     if (!module) {
-      return res.status(404).json({
-        message: 'Learning module not found.',
-      });
+      return res.status(404).json({ message: 'Learning module not found.' });
     }
 
-    res.json({
-      module,
-    });
+    res.json({ module });
   } catch (error) {
     console.error('Error fetching learning module:', error);
-
-    res.status(500).json({
-      message: 'Failed to fetch learning module.',
-    });
+    res.status(500).json({ message: 'Failed to fetch learning module.' });
   }
 });
 
-// POST /api/learning-modules
-// Only authenticated admins and teachers can create modules
+// Only the administrator can create learning modules and decide whether they publish.
 router.post(
   '/',
   protect,
-  authorize('admin', 'teacher'),
+  authorize('admin'),
   async (req, res) => {
     try {
-      const {
-        title,
-        description,
-        level,
-        is_published,
-      } = req.body;
+      const { title, description, level, is_published } = req.body;
 
-      if (typeof title !== 'string' || !title.trim()) {
-        return res.status(400).json({
-          message: 'Module title is required.',
-        });
+      if (typeof title !== 'string' || !title.trim() || title.trim().length > 200) {
+        return res.status(400).json({ message: 'Module title is required and must be 200 characters or fewer.' });
       }
 
-      // The authenticated user's ID is used as the creator.
-      // Never trust a creator ID supplied by the request body.
       const module = await createModule({
         title: title.trim(),
         description,
@@ -99,10 +69,7 @@ router.post(
       });
     } catch (error) {
       console.error('Error creating learning module:', error);
-
-      res.status(500).json({
-        message: 'Failed to create learning module.',
-      });
+      res.status(500).json({ message: 'Failed to create learning module.' });
     }
   }
 );
