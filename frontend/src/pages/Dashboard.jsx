@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import LearningManager from '../components/LearningManager'
 import './Dashboard.css'
 
 function Dashboard() {
@@ -595,6 +596,14 @@ async function handleMediaDeletion(item) {
       </section>
 
       {/* LEARNING MODULES */}
+
+      {['admin', 'teacher'].includes(user.role) && (
+        <LearningManager onModulesChanged={async () => {
+          const result = await api.getLearningModules()
+          setLearningModules(Array.isArray(result) ? result : result.modules || result.data || [])
+        }} />
+      )}
+
 
       <section id="modules" className="dashboard-section">
         <div className="dashboard-section-heading">
