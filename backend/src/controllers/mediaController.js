@@ -2,6 +2,7 @@
 const mediaModel = require("../models/mediaModel");
 const cloudinary = require("../config/cloudinary");
 const { Readable } = require("stream");
+const { randomUUID } = require("crypto");
 
 const validTypes = ["image", "video", "audio", "document"];
 
@@ -34,13 +35,30 @@ function uploadToCloudinary(file) {
         ? "video"
         : "raw";
 
+    const originalName = String(file.originalname || "upload")
+      .replace(/^.*[\\/]/, "")
+      .normalize("NFKD")
+      .replace(/[^A-Za-z0-9_.-]/g, "-")
+      .replace(/--+/g, "-")
+      .slice(-120);
+    const uploadOptions = {
+      resource_type: resourceType,
+      folder: "legacyeducation/media",
+      ...(resourceType === "raw"
+        ? {
+            // Cloudinary raw assets need the extension in public_id.
+            public_id: `${Date.now()}-${randomUUID()}-${originalName || "document.bin"}`,
+            use_filename: false,
+            unique_filename: false,
+          }
+        : {
+            use_filename: true,
+            unique_filename: true,
+          }),
+    };
+
     const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        resource_type: resourceType,
-        folder: "legacyeducation/media",
-        use_filename: true,
-        unique_filename: true,
-      },
+      uploadOptions,
       (error, result) => {
         if (error) {
           reject(error);
@@ -76,6 +94,13 @@ async function uploadFile(req, res, next) {
     }
 
     const media_type = mediaTypeByMime[req.file.mimetype];
+
+    if (req.file.mimetype === "application/pdf" &&
+        req.file.buffer.subarray(0, 5).toString("ascii") !== "%PDF-") {
+      return res.status(400).json({
+        message: "The selected file does not contain a valid PDF signature.",
+      });
+    }
 
     if (!media_type) {
       return res.status(400).json({
@@ -123,6 +148,56 @@ async function uploadFile(req, res, next) {
   }
 }
 
+
+
+async function downloadPdf(req, res, next) {
+  try {
+    const { id } = req.params;
+    if (!/^\d+$/.test(id)) return res.status(400).json({ message: "Invalid media ID." });
+
+    const media = await mediaModel.getMediaById(id);
+    if (!media) return res.status(404).json({ message: "Book not found." });
+    if (media.mime_type !== "application/pdf") {
+      return res.status(415).json({ message: "This file is not a PDF." });
+    }
+
+    const userId = getUserId(req);
+    const isOwner = userId !== null && String(media.uploaded_by) === String(userId);
+    const isAdmin = req.user?.role === "admin";
+    if (media.status !== "published" && !isOwner && !isAdmin) {
+      return res.status(403).json({ message: "This book is not publicly available." });
+    }
+
+    const sourceUrl = new URL(media.file_url);
+    if (sourceUrl.protocol !== "https:" || sourceUrl.hostname !== "res.cloudinary.com") {
+      return res.status(502).json({ message: "The stored PDF location is invalid." });
+    }
+
+    const upstream = await fetch(sourceUrl, { signal: AbortSignal.timeout(45000) });
+    if (!upstream.ok || !upstream.body) {
+      return res.status(502).json({ message: "The PDF could not be retrieved from file storage." });
+    }
+
+    const safeBase = String(media.title || "LegacyEducation-book")
+      .normalize("NFKD")
+      .replace(/[^\w -]/g, "")
+      .trim()
+      .replace(/[\s-]+/g, "-")
+      .slice(0, 100) || "LegacyEducation-book";
+    const filename = safeBase.toLowerCase().endsWith(".pdf") ? safeBase : safeBase + ".pdf";
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`);
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Cache-Control", media.status === "published" ? "public, max-age=300" : "private, no-store");
+    const contentLength = upstream.headers.get("content-length");
+    if (contentLength) res.setHeader("Content-Length", contentLength);
+
+    Readable.fromWeb(upstream.body).on("error", next).pipe(res);
+  } catch (error) {
+    next(error);
+  }
+}
 
 async function listPublished(req, res, next) {
   try {
@@ -405,6 +480,7 @@ async function remove(req, res, next) {
 
 module.exports = {
   uploadFile,
+  downloadPdf,
   listPublished,
   listAllForAdmin,
   getOne,

@@ -110,6 +110,7 @@ export const api = {
 
   // Published media library
   getMedia: () => request('/media'),
+  mediaDownloadUrl: (id) => getApiUrl(`/media/${encodeURIComponent(id)}/download`),
 
   // Admin media library, including drafts
   getAdminMedia: () => request('/media/admin/library'),
