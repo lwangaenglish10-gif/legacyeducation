@@ -22,8 +22,18 @@ function LearningModule() {
 
         const requests = [api.getLearningModule(moduleId), api.getLessons(moduleId)]
         if (localStorage.getItem('legacyeducation_token')) requests.push(api.getCompletedLessons())
-        const [moduleResponse, lessonResponse, completedResponse] = await Promise.all(requests)
 
+        const results = await Promise.allSettled(requests)
+        const moduleResult = results[0]
+        const lessonsResult = results[1]
+        const progressResult = results[2]
+
+        // The module and its lessons are essential; saved progress is optional.
+        if (moduleResult.status === 'rejected') throw moduleResult.reason
+        if (lessonsResult.status === 'rejected') throw lessonsResult.reason
+
+        const moduleResponse = moduleResult.value
+        const lessonResponse = lessonsResult.value
         const lessonItems = Array.isArray(lessonResponse)
           ? lessonResponse
           : lessonResponse.lessons || []
@@ -31,7 +41,13 @@ function LearningModule() {
         if (active) {
           setModule(moduleResponse.module || moduleResponse)
           setLessons(lessonItems)
-          setCompletedIds((completedResponse?.lessons || []).map((item) => Number(item.lesson_id)))
+
+          if (progressResult?.status === 'fulfilled') {
+            setCompletedIds((progressResult.value?.lessons || []).map((item) => Number(item.lesson_id)))
+          } else if (progressResult?.status === 'rejected') {
+            console.error('Lesson progress could not be loaded:', progressResult.reason)
+            setProgressMessage('Your lessons are available, but saved progress could not be loaded.')
+          }
         }
       } catch (err) {
         if (active) {
