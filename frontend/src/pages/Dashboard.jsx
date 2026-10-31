@@ -597,7 +597,7 @@ async function handleMediaDeletion(item) {
 
       {/* LEARNING MODULES */}
 
-      {['admin', 'teacher'].includes(user.role) && (
+      {user.role === 'admin' && (
         <LearningManager onModulesChanged={async () => {
           const result = await api.getLearningModules()
           setLearningModules(Array.isArray(result) ? result : result.modules || result.data || [])
