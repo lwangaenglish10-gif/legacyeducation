@@ -15,18 +15,25 @@ function LearningManager({ onModulesChanged }) {
   const [message, setMessage] = useState('')
   const [isError, setIsError] = useState(false)
 
-  async function loadModules() {
-    const result = await api.getLearningModules()
-    const items = Array.isArray(result) ? result : result.modules || result.data || []
-    setModules(items)
-    if (!selectedModule && items.length) setSelectedModule(String(items[0].id))
-  }
-
   useEffect(() => {
-    loadModules().catch((error) => {
-      setMessage(error.message || 'Could not load teaching modules.')
-      setIsError(true)
-    })
+    let active = true
+
+    api.getLearningModules()
+      .then((result) => {
+        if (!active) return
+        const items = Array.isArray(result) ? result : result.modules || result.data || []
+        setModules(items)
+        if (items.length) setSelectedModule(String(items[0].id))
+      })
+      .catch((error) => {
+        if (!active) return
+        setMessage(error.message || 'Could not load teaching modules.')
+        setIsError(true)
+      })
+
+    return () => {
+      active = false
+    }
   }, [])
 
   async function handleCreateModule(event) {
