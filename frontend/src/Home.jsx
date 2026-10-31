@@ -9,6 +9,7 @@ function Home() {
 const [newsletterConsent, setNewsletterConsent] = useState(false)
 const [newsletterMessage, setNewsletterMessage] = useState('')
 const [newsletterLoading, setNewsletterLoading] = useState(false)
+const [menuOpen, setMenuOpen] = useState(false)
 
 async function handleNewsletterSubmit(event) {
   event.preventDefault()
@@ -39,19 +40,32 @@ async function handleNewsletterSubmit(event) {
           Legacy<span>Education</span>
         </a>
 
-        <nav aria-label="Main navigation">
-          <a href="#home">Home</a>
-          <a href="#discover">Discover</a>
-          <a href="#learning">Learning</a>
-          <a href="#media">Media</a>
-          <a href="#community">Community</a>
+        <button
+          className="mobile-menu-toggle"
+          type="button"
+          aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={menuOpen}
+          aria-controls="primary-navigation"
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+
+        <nav id="primary-navigation" className={menuOpen ? 'is-open' : ''} aria-label="Main navigation">
+          <a href="#home" onClick={() => setMenuOpen(false)}>Home</a>
+          <a href="#discover" onClick={() => setMenuOpen(false)}>Discover</a>
+          <a href="#learning" onClick={() => setMenuOpen(false)}>Learning</a>
+          <a href="#media" onClick={() => setMenuOpen(false)}>Media</a>
+          <a href="#community" onClick={() => setMenuOpen(false)}>Community</a>
         </nav>
 
         <div className="nav-actions">
-          <Link className="login-link" to="/login">
+          <Link className="login-link" to="/login" onClick={() => setMenuOpen(false)}>
             Log in
           </Link>
-          <Link className="button button-small" to="/register">
+          <Link className="button button-small" to="/register" onClick={() => setMenuOpen(false)}>
             Join LegacyEducation
           </Link>
         </div>
