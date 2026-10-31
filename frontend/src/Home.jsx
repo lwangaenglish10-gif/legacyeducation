@@ -56,8 +56,8 @@ async function handleNewsletterSubmit(event) {
         <nav id="primary-navigation" className={menuOpen ? 'is-open' : ''} aria-label="Main navigation">
           <a href="#home" onClick={() => setMenuOpen(false)}>Home</a>
           <a href="#discover" onClick={() => setMenuOpen(false)}>Discover</a>
-          <a href="#learning" onClick={() => setMenuOpen(false)}>Learning</a>
-          <a href="#media" onClick={() => setMenuOpen(false)}>Media</a>
+          <Link to="/learn" onClick={() => setMenuOpen(false)}>Learning</Link>
+          <Link to="/library" onClick={() => setMenuOpen(false)}>Book Library</Link>
           <a href="#community" onClick={() => setMenuOpen(false)}>Community</a>
         </nav>
 
@@ -232,7 +232,7 @@ async function handleNewsletterSubmit(event) {
                 and take the next step towards your creative goals.
               </p>
 
-              <Link to="/dashboard" className="feature-link">
+              <Link to="/learn" className="feature-link">
                 Start learning ↗
               </Link>
               <p className="feature-note">
@@ -262,8 +262,8 @@ async function handleNewsletterSubmit(event) {
                 ways to communicate ideas through media.
               </p>
 
-              <Link to="/dashboard" className="feature-link">
-                Explore media ↗
+              <Link to="/library" className="feature-link">
+                Explore book library ↗
               </Link>
               <p className="feature-note">
                 Sign in to visit the media library
@@ -380,8 +380,8 @@ async function handleNewsletterSubmit(event) {
 
         <nav aria-label="Footer navigation">
           <a href="#discover">Discover</a>
-          <a href="#learning">Learning</a>
-          <a href="#media">Media</a>
+          <Link to="/learn">Learning</Link>
+          <Link to="/library">Book Library</Link>
           <a href="#join">Join us</a>
           <Link to="/login">Log in</Link>
         </nav>
