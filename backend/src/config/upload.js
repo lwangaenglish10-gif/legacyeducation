@@ -13,13 +13,9 @@ const allowedTypes = {
   "application/pdf": ".pdf",
   "text/plain": ".txt",
   "application/msword": ".doc",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-    ".docx",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
   "application/vnd.ms-powerpoint": ".ppt",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation":
-    ".ppt",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation":
-    ".pptx",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation": ".pptx",
 };
 
 const fileFilter = (req, file, callback) => {

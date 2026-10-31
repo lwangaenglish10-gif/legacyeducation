@@ -19,6 +19,11 @@ const [loadingSubmissions, setLoadingSubmissions] = useState(true)
 const [reviewArticles, setReviewArticles] = useState([])
 const [loadingReviewArticles, setLoadingReviewArticles] = useState(false)
 const [publishingArticleId, setPublishingArticleId] = useState(null)
+const [deletingArticleId, setDeletingArticleId] = useState(null)
+const [editingArticle, setEditingArticle] = useState(null)
+const [editTitle, setEditTitle] = useState('')
+const [editBody, setEditBody] = useState('')
+const [savingArticleEdit, setSavingArticleEdit] = useState(false)
 const [reviewMessage, setReviewMessage] = useState('')
 const [reviewError, setReviewError] = useState(false)
   const [articleTitle, setArticleTitle] = useState('')
@@ -276,6 +281,59 @@ async function handleArticlePublication(item) {
     setPublishingArticleId(null)
   }
 }
+
+function startArticleEdit(item) {
+  setEditingArticle(item)
+  setEditTitle(item.title || '')
+  setEditBody(item.body || '')
+}
+
+async function handleArticleEdit(event) {
+  event.preventDefault()
+  if (!editingArticle || !editTitle.trim() || !editBody.trim()) return
+
+  setSavingArticleEdit(true)
+  setReviewMessage('')
+  setReviewError(false)
+
+  try {
+    await api.updateContent(editingArticle.id, {
+      title: editTitle.trim(),
+      body: editBody.trim(),
+    })
+    await Promise.all([refreshArticlesForReview(), refreshMySubmissions()])
+    setEditingArticle(null)
+    setReviewMessage('Article changes saved successfully.')
+  } catch (err) {
+    setReviewMessage(err.message || 'Could not save article changes.')
+    setReviewError(true)
+  } finally {
+    setSavingArticleEdit(false)
+  }
+}
+
+async function handleArticleDeletion(item) {
+  const confirmed = window.confirm(
+    `Delete "${item.title}" permanently from LegacyEducation? This action cannot be undone.`
+  )
+  if (!confirmed) return
+
+  setDeletingArticleId(item.id)
+  setReviewMessage('')
+  setReviewError(false)
+
+  try {
+    await api.deleteContent(item.id)
+    await Promise.all([refreshArticlesForReview(), refreshMySubmissions()])
+    setContent((current) => current.filter((article) => article.id !== item.id))
+    setReviewMessage('Article deleted successfully.')
+  } catch (err) {
+    setReviewMessage(err.message || 'Could not delete this article.')
+    setReviewError(true)
+  } finally {
+    setDeletingArticleId(null)
+  }
+}
   async function handleArticleSubmit(event) {
     event.preventDefault()
 
@@ -376,14 +434,9 @@ try {
     }
   }
 
-  function handleLogout() {
-    localStorage.removeItem('legacyeducation_token')
-    localStorage.removeItem('legacyeducation_user')
-    navigate('/login', { replace: true })
-  }
 
 
-  // NEW FUNCTION: publish or unpublish uploaded media
+
   async function handleMediaPublication(item) {
     const nextStatus =
       item.status === 'published' ? 'draft' : 'published'
@@ -473,8 +526,9 @@ async function handleMediaDeletion(item) {
 
   if (checking) {
     return (
-      <main className="dashboard-page">
-        <p>Verifying your login...</p>
+      <main className="dashboard-page dashboard-loading">
+        <div className="dashboard-loading-mark">LE</div>
+        <p>Preparing your creative workspace...</p>
       </main>
     )
   }
@@ -524,6 +578,22 @@ async function handleMediaDeletion(item) {
         </div>
       )}
 
+      <nav className="dashboard-quick-nav" aria-label="Dashboard sections">
+        <a href="#modules">Learning</a>
+        <a href="#stories">Stories</a>
+        <a href="#my-submissions">My submissions</a>
+        <a href="#submit-article">Submit work</a>
+        <a href="#creative-media">Media</a>
+        {user.role === 'admin' && <a href="#article-review">Administration</a>}
+      </nav>
+
+      <section className="dashboard-overview" aria-label="Your workspace overview">
+        <article><span>Learning modules</span><strong>{learningModules.length}</strong></article>
+        <article><span>Published stories</span><strong>{content.length}</strong></article>
+        <article><span>Your submissions</span><strong>{mySubmissions.length}</strong></article>
+        <article><span>Creative media</span><strong>{media.length}</strong></article>
+      </section>
+
       {/* LEARNING MODULES */}
 
       <section id="modules" className="dashboard-section">
@@ -570,7 +640,7 @@ async function handleMediaDeletion(item) {
 
       {/* STORIES & ARTICLES */}
 
-      <section className="dashboard-section">
+      <section id="stories" className="dashboard-section">
         <div className="dashboard-section-heading">
           <p className="eyebrow">LEARN & DISCOVER</p>
           <h2>Stories & Articles</h2>
@@ -688,15 +758,32 @@ async function handleMediaDeletion(item) {
               Status: <strong>{item.status}</strong>
             </p>
 
-            <button
-              type="button"
-              disabled={publishingArticleId === item.id}
-              onClick={() => handleArticlePublication(item)}
-            >
-              {publishingArticleId === item.id
-                ? 'Publishing...'
-                : 'Publish Article'}
-            </button>
+            <div className="dashboard-card-actions">
+              <button
+                className="dashboard-button dashboard-button-primary"
+                type="button"
+                disabled={publishingArticleId === item.id || deletingArticleId === item.id}
+                onClick={() => handleArticlePublication(item)}
+              >
+                {publishingArticleId === item.id ? 'Publishing...' : 'Publish'}
+              </button>
+              <button
+                className="dashboard-button dashboard-button-secondary"
+                type="button"
+                disabled={deletingArticleId === item.id || publishingArticleId === item.id}
+                onClick={() => startArticleEdit(item)}
+              >
+                Edit
+              </button>
+              <button
+                className="dashboard-button dashboard-button-danger"
+                type="button"
+                disabled={deletingArticleId === item.id || publishingArticleId === item.id}
+                onClick={() => handleArticleDeletion(item)}
+              >
+                {deletingArticleId === item.id ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
           </article>
         ))}
       </div>
@@ -761,7 +848,7 @@ async function handleMediaDeletion(item) {
 
       {/* MEDIA LIBRARY */}
 
-<section className="dashboard-section">
+<section id="creative-media" className="dashboard-section">
   <div className="dashboard-section-heading">
     <p className="eyebrow">CONTRIBUTE</p>
     <h2>Upload Media</h2>
@@ -937,6 +1024,61 @@ async function handleMediaDeletion(item) {
           Explore homepage {'→'}
         </Link>
       </div>
+
+      {editingArticle && (
+        <div className="dashboard-modal-backdrop" role="presentation">
+          <section
+            className="dashboard-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="edit-article-heading"
+          >
+            <div className="dashboard-modal-heading">
+              <div>
+                <p className="eyebrow">EDITORIAL WORKSPACE</p>
+                <h2 id="edit-article-heading">Edit article</h2>
+              </div>
+              <button
+                className="dashboard-modal-close"
+                type="button"
+                onClick={() => setEditingArticle(null)}
+                aria-label="Close editor"
+                disabled={savingArticleEdit}
+              >
+                ×
+              </button>
+            </div>
+            <form className="dashboard-article-form" onSubmit={handleArticleEdit}>
+              <label htmlFor="edit-article-title">Article title</label>
+              <input
+                id="edit-article-title"
+                value={editTitle}
+                onChange={(event) => setEditTitle(event.target.value)}
+                maxLength={200}
+                required
+                disabled={savingArticleEdit}
+              />
+              <label htmlFor="edit-article-body">Article content</label>
+              <textarea
+                id="edit-article-body"
+                value={editBody}
+                onChange={(event) => setEditBody(event.target.value)}
+                rows={12}
+                required
+                disabled={savingArticleEdit}
+              />
+              <div className="dashboard-card-actions">
+                <button className="dashboard-button dashboard-button-primary" type="submit" disabled={savingArticleEdit}>
+                  {savingArticleEdit ? 'Saving...' : 'Save changes'}
+                </button>
+                <button className="dashboard-button dashboard-button-secondary" type="button" onClick={() => setEditingArticle(null)} disabled={savingArticleEdit}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
 
       <footer className="dashboard-footer">
         Learn. Create. Share. Leave a legacy.
