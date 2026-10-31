@@ -4,18 +4,22 @@ const pool = require("../config/database");
 
 const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email =
+      typeof req.body.email === "string"
+        ? req.body.email.trim().toLowerCase()
+        : "";
+    const password = req.body.password;
 
-    // Validate required fields
-    if (!email || !password) {
+    if (!email || typeof password !== "string" || !/^\S+@\S+\.\S+$/.test(email)) {
       return res.status(400).json({
-        message: "Email and password are required",
+        message: "Invalid email or password",
       });
     }
 
-    // Find user by email
     const result = await pool.query(
-      "SELECT id, full_name, email, password_hash, role FROM users WHERE email = $1",
+      `SELECT id, full_name, email, password_hash, role
+       FROM users
+       WHERE LOWER(email) = LOWER($1)`,
       [email]
     );
 
@@ -26,32 +30,21 @@ const loginUser = async (req, res) => {
     }
 
     const user = result.rows[0];
-
-    // Compare password with stored hash
-    const passwordMatch = await bcrypt.compare(
-      password,
-      user.password_hash
-    );
+    const passwordMatch = await bcrypt.compare(password, user.password_hash);
 
     if (!passwordMatch) {
+      console.warn("Authentication failure for supplied email.");
       return res.status(401).json({
         message: "Invalid email or password",
       });
     }
 
-    // Create JWT
     const token = jwt.sign(
-      {
-        id: user.id,
-        role: user.role,
-      },
+      { id: user.id },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      }
+      { expiresIn: "2h" }
     );
 
-    // Successful login
     res.json({
       message: "Login successful",
       user: {
