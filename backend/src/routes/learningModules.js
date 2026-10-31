@@ -90,8 +90,7 @@ router.post(
         description,
         level,
         created_by: req.user.id,
-        is_published:
-          req.user.role === 'admin' && is_published === true,
+        is_published: is_published === true,
       });
 
       res.status(201).json({
