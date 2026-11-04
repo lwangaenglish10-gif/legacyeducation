@@ -369,7 +369,7 @@ async function handleNewsletterSubmit(event) {
 
       <footer className="footer">
         <a className="logo" href="#home">
-          Legacy<span>Education</span>
+          Legacy<span>Dream Arts</span>
         </a>
 
         <p>Ideas. Learning. Stories. Culture.</p>
