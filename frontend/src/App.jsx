@@ -13,11 +13,13 @@ import LearningModule from './pages/LearningModule.jsx'
 import Stories from './pages/Stories.jsx'
 import LearnerDashboard from './pages/LearnerDashboard.jsx'
 import BookLibrary from './pages/BookLibrary.jsx'
+import Divisions from './pages/Divisions.jsx'
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/divisions" element={<Divisions />} />
         <Route path="/stories" element={<Stories />} />
         <Route path="/learn" element={<LearnerDashboard />} />
         <Route path="/library" element={<BookLibrary />} />
