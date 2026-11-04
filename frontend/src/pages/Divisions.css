@@ -1,0 +1,48 @@
+.divisions-page { min-height: 100vh; }
+.divisions-navbar { position: relative; }
+.divisions-hero {
+  max-width: 1120px; margin: 0 auto; padding: clamp(64px, 9vw, 112px) 24px 54px;
+}
+.divisions-hero h1 {
+  max-width: 850px; margin: 0; color: #173d30;
+  font: 800 clamp(42px, 6vw, 72px)/1.05 'Manrope', sans-serif;
+  letter-spacing: -.06em;
+}
+.divisions-hero h1 span { color: #6a8750; }
+.divisions-hero > p:last-child {
+  max-width: 660px; margin: 24px 0 0; color: #68766e;
+  font-size: 16px; line-height: 1.85;
+}
+.division-grid-section { max-width: 1120px; margin: 0 auto; padding: 0 24px 88px; }
+.division-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.division-card {
+  min-height: 270px; padding: 28px; display: flex; flex-direction: column; align-items: flex-start;
+  background: #fffefa; border: 1px solid #e5e9e1; border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(25,55,39,.035);
+}
+.division-card-top { width: 100%; display: flex; justify-content: space-between; gap: 12px; color: #7b847b; font-size: 10px; font-weight: 800; letter-spacing: 1px; }
+.division-status { color: #62834d; letter-spacing: 0; text-align: right; }
+.division-card h2 { margin: 30px 0 10px; color: #173d30; font: 800 25px/1.2 'Manrope', sans-serif; letter-spacing: -.04em; }
+.division-card > p { margin: 0 0 18px; color: #68766e; font-size: 13px; line-height: 1.8; }
+.division-detail { margin-top: auto; padding-bottom: 18px; color: #7b847b; font-size: 11px; }
+.division-coming-soon { color: #7b847b; font-size: 12px; font-weight: 700; }
+.division-community {
+  max-width: 1072px; margin: 0 auto 76px; padding: 48px 7%;
+  background: #174d3b; border-radius: 20px; color: white;
+}
+.division-community .eyebrow { color: #d9f279; }
+.division-community h2 { max-width: 650px; margin: 0; font: 800 clamp(30px, 4vw, 44px)/1.15 'Manrope', sans-serif; letter-spacing: -.05em; }
+.division-community > p:not(.eyebrow) { max-width: 600px; margin: 18px 0 24px; color: #e0e9e2; font-size: 14px; line-height: 1.8; }
+.division-community .button { background: #d9f279; border-color: #d9f279; color: #123d31; }
+@media (max-width: 720px) {
+  .divisions-navbar { display: flex; flex-wrap: wrap; padding: 16px 20px; }
+  .divisions-navbar nav { display: flex; flex-direction: row; flex-wrap: wrap; width: 100%; order: 3; }
+  .divisions-navbar .nav-actions { width: 100%; justify-content: flex-start; }
+  .divisions-hero { padding: 58px 22px 38px; }
+  .divisions-hero h1 { font-size: clamp(39px, 10vw, 56px); }
+  .divisions-hero > p:last-child { font-size: 14px; }
+  .division-grid-section { padding: 0 18px 60px; }
+  .division-grid { grid-template-columns: 1fr; gap: 14px; }
+  .division-card { min-height: 245px; padding: 22px; }
+  .division-community { margin: 0 16px 50px; padding: 34px 24px; }
+}
