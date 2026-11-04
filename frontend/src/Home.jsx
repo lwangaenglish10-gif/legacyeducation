@@ -383,6 +383,12 @@ async function handleNewsletterSubmit(event) {
           <Link to="/login">Log in</Link>
         </nav>
 
+        <nav className="social-links" aria-label="Legacy Kev social links">
+          <a href="https://www.instagram.com/legacy_kev/" target="_blank" rel="noopener noreferrer" aria-label="Legacy Kev on Instagram">Instagram ↗</a>
+          <a href="https://www.tiktok.com/@k_ye03" target="_blank" rel="noopener noreferrer" aria-label="Legacy Kev on TikTok">TikTok ↗</a>
+          <a href="https://wa.me/254794713275" target="_blank" rel="noopener noreferrer" aria-label="Contact Legacy Kev on WhatsApp">WhatsApp ↗</a>
+        </nav>
+
         <span>© 2026 Legacy Dream Arts</span>
       </footer>
     </div>
