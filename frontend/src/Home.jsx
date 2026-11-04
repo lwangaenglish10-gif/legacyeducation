@@ -36,8 +36,8 @@ async function handleNewsletterSubmit(event) {
   return (
     <div className="site">
       <header className="navbar">
-        <a className="logo" href="#home" aria-label="LegacyEducation home">
-          Legacy<span>Education</span>
+        <a className="logo" href="#home" aria-label="Legacy Dream Arts home">
+          Legacy<span>Dream Arts</span>
         </a>
 
         <button
@@ -55,6 +55,7 @@ async function handleNewsletterSubmit(event) {
 
         <nav id="primary-navigation" className={menuOpen ? 'is-open' : ''} aria-label="Main navigation">
           <a href="#home" onClick={() => setMenuOpen(false)}>Home</a>
+          <Link to="/divisions" onClick={() => setMenuOpen(false)}>Our divisions</Link>
           <a href="#discover" onClick={() => setMenuOpen(false)}>Discover</a>
           <Link to="/learn" onClick={() => setMenuOpen(false)}>Learning</Link>
           <Link to="/library" onClick={() => setMenuOpen(false)}>Book Library</Link>
@@ -66,7 +67,7 @@ async function handleNewsletterSubmit(event) {
             Log in
           </Link>
           <Link className="button button-small" to="/register" onClick={() => setMenuOpen(false)}>
-            Join LegacyEducation
+            Join Legacy
           </Link>
         </div>
       </header>
@@ -75,7 +76,7 @@ async function handleNewsletterSubmit(event) {
         <section className="hero" id="home">
           <div className="hero-content">
             <p className="eyebrow">
-              A HOME FOR THE NEXT GENERATION OF CREATIVES
+              THE CREATIVE HOUSE FOR IDEAS, LEARNING AND EXPRESSION
             </p>
 
             <h1>
@@ -83,9 +84,7 @@ async function handleNewsletterSubmit(event) {
             </h1>
 
             <p className="hero-description">
-              Discover new perspectives, develop practical skills,
-              share your work and connect with a community that
-              believes creativity can make a difference.
+              Legacy Dream Arts brings education, literature, media and creative expression together. Discover ideas, develop practical skills, share your work and connect with a community that believes creativity can make a difference.
             </p>
 
             <div className="hero-actions">
@@ -94,7 +93,7 @@ async function handleNewsletterSubmit(event) {
               </Link>
 
               <a className="text-link" href="#discover">
-                Explore the platform ↓
+                Explore the house ↓
               </a>
             </div>
 
@@ -159,18 +158,16 @@ async function handleNewsletterSubmit(event) {
         <section className="discover section" id="discover">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">EXPLORE LEGACYEDUCATION</p>
+              <p className="eyebrow">EXPLORE THE LEGACY HOUSE</p>
               <h2>
-                One platform.
+                One creative house.
                 <br />
-                <span>Endless possibilities.</span>
+                <span>Many possibilities.</span>
               </h2>
             </div>
 
             <p className="section-description">
-              Find inspiration, develop your abilities and take
-              your next idea further. Explore the different ways
-              you can learn, create and contribute.
+              Explore the divisions of Legacy Dream Arts: learn with LegacyEducation, discover literary work, experience original media and connect with creative services.
             </p>
           </div>
 
@@ -323,11 +320,10 @@ async function handleNewsletterSubmit(event) {
 
 <section className="newsletter-section" id="newsletter">
   <div className="newsletter-content">
-    <p className="eyebrow">THE LEGACYEDUCATION LETTER</p>
+    <p className="eyebrow">THE LEGACY DREAM ARTS LETTER</p>
     <h2>Ideas worth sharing.</h2>
     <p>
-      Get creative stories, learning opportunities and platform
-      updates delivered to your inbox.
+      Receive original stories, creative ideas, learning opportunities and news from across the Legacy Dream Arts house.
     </p>
 
     <form onSubmit={handleNewsletterSubmit} className="newsletter-form">
@@ -349,7 +345,7 @@ async function handleNewsletterSubmit(event) {
           onChange={(event) => setNewsletterConsent(event.target.checked)}
           required
         />
-        I agree to receive newsletter updates from LegacyEducation.
+        I agree to receive newsletter updates from Legacy Dream Arts.
       </label>
 
       <button
@@ -373,20 +369,21 @@ async function handleNewsletterSubmit(event) {
 
       <footer className="footer">
         <a className="logo" href="#home">
-          Legacy<span>Education</span>
+          Legacy<span>Dream Arts</span>
         </a>
 
-        <p>Learn. Create. Share. Leave a legacy.</p>
+        <p>Ideas. Learning. Stories. Culture.</p>
 
         <nav aria-label="Footer navigation">
           <a href="#discover">Discover</a>
+          <Link to="/divisions">Our divisions</Link>
           <Link to="/learn">Learning</Link>
           <Link to="/library">Book Library</Link>
           <a href="#join">Join us</a>
           <Link to="/login">Log in</Link>
         </nav>
 
-        <span>© 2026 LegacyEducation</span>
+        <span>© 2026 Legacy Dream Arts</span>
       </footer>
     </div>
   )
