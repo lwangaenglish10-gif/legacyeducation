@@ -103,43 +103,11 @@ async function handleNewsletterSubmit(event) {
             </div>
           </div>
 
-          <div
-            className="hero-art"
-            role="img"
-            aria-label="Creative ideas, learning and collaboration"
-          >
-            <div className="art-orbit orbit-one" />
-            <div className="art-orbit orbit-two" />
-
-            <div className="art-center">
-              <span className="art-star" aria-hidden="true">✳</span>
-              <p>CREATE.</p>
-              <p>LEARN.</p>
-              <p>LEAVE A MARK.</p>
-            </div>
-
-            <div className="floating-card card-story">
-              <span className="card-icon" aria-hidden="true">✎</span>
-              <div>
-                <strong>Stories</strong>
-                <small>Ideas worth sharing</small>
-              </div>
-            </div>
-
-            <div className="floating-card card-learn">
-              <span className="card-icon" aria-hidden="true">↗</span>
-              <div>
-                <strong>Learning</strong>
-                <small>Skills for your journey</small>
-              </div>
-            </div>
-
-            <div className="floating-card card-community">
-              <span className="card-icon" aria-hidden="true">◎</span>
-              <div>
-                <strong>Community</strong>
-                <small>Better together</small>
-              </div>
+          <div className="hero-art hero-art-photo">
+            <img src="/images/hero-story.svg" alt="A creative learner developing an idea into written work" />
+            <div className="hero-image-caption">
+              <span>CREATE WITH PURPOSE</span>
+              <strong>Ideas become legacy.</strong>
             </div>
           </div>
         </section>
@@ -181,14 +149,8 @@ async function handleNewsletterSubmit(event) {
                 <span className="feature-symbol" aria-hidden="true">↗</span>
               </div>
 
-              <div className="feature-illustration story-illustration" aria-hidden="true">
-                <span className="illustration-line" />
-                <span className="illustration-word">
-                  Ideas
-                  <br />
-                  into stories.
-                </span>
-                <span className="illustration-circle">✳</span>
+              <div className="feature-illustration story-illustration">
+                <img src="/images/publishing.svg" alt="A writer developing a story in an open manuscript" loading="lazy" />
               </div>
 
               <h3>Stories &amp; Articles</h3>
@@ -197,7 +159,7 @@ async function handleNewsletterSubmit(event) {
                 stories that inform, inspire and challenge you.
               </p>
 
-              <Link to="/stories" className="feature-link">
+              <Link to="/stories" className="button button-outline feature-link">
   Explore stories ↗
 </Link>
               <p className="feature-note">
@@ -214,13 +176,8 @@ async function handleNewsletterSubmit(event) {
                 <span className="feature-symbol" aria-hidden="true">↗</span>
               </div>
 
-              <div className="feature-illustration learning-illustration" aria-hidden="true">
-                <span className="book-shape">
-                  LEARN
-                  <br />
-                  <small>EVERY DAY</small>
-                </span>
-                <span className="learning-spark">✦</span>
+              <div className="feature-illustration learning-illustration">
+                <img src="/images/education.svg" alt="A learner building skills through creative education" loading="lazy" />
               </div>
 
               <h3>Learning Modules</h3>
@@ -246,11 +203,8 @@ async function handleNewsletterSubmit(event) {
                 <span className="feature-symbol" aria-hidden="true">↗</span>
               </div>
 
-              <div className="feature-illustration media-illustration" aria-hidden="true">
-                <span className="play-button">▶</span>
-                <span className="media-label">
-                  WATCH · LISTEN · CREATE
-                </span>
+              <div className="feature-illustration media-illustration">
+                <img src="/images/media.svg" alt="A media production screen representing original creative work" loading="lazy" />
               </div>
 
               <h3>Creative Media</h3>
@@ -276,11 +230,8 @@ async function handleNewsletterSubmit(event) {
                 <span className="feature-symbol" aria-hidden="true">↗</span>
               </div>
 
-              <div className="feature-illustration community-illustration" aria-hidden="true">
-                <span className="people people-one">C</span>
-                <span className="people people-two">R</span>
-                <span className="people people-three">E</span>
-                <span className="community-plus">+</span>
+              <div className="feature-illustration community-illustration">
+                <img src="/images/community.svg" alt="A group of creatives collaborating together" loading="lazy" />
               </div>
 
               <h3>Creative Community</h3>
