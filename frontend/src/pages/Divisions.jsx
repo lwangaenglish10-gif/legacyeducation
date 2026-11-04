@@ -5,6 +5,7 @@ const divisions = [
   {
     number: '01',
     name: 'LegacyEducation',
+    image: '/images/education.svg',
     description: 'Learn, develop practical skills and turn creative ideas into meaningful work.',
     detail: 'Courses · Learning modules · Resources',
     link: '/learn',
@@ -14,6 +15,7 @@ const divisions = [
   {
     number: '02',
     name: 'Legacy Publishing',
+    image: '/images/publishing.svg',
     description: 'Discover stories, articles, poetry and original literary work from emerging voices.',
     detail: 'Stories · Articles · Books',
     link: '/stories',
@@ -23,6 +25,7 @@ const divisions = [
   {
     number: '03',
     name: 'Legacy Media',
+    image: '/images/media.svg',
     description: 'A home for original video, conversations, interviews and creative productions.',
     detail: 'Video · Interviews · Original shows',
     link: '/library',
@@ -32,6 +35,7 @@ const divisions = [
   {
     number: '04',
     name: 'Legacy Creative Studio',
+    image: '/images/studio.svg',
     description: 'Creative services and collaborations for people and organisations with ideas to share.',
     detail: 'Design · Writing · Creative projects',
     link: null,
@@ -78,11 +82,12 @@ function Divisions() {
                   <span>{division.number} / DIVISION</span>
                   <span className="division-status">{division.status}</span>
                 </div>
+                <div className="division-image"><img src={division.image} alt={`Visual story for ${division.name}`} loading="lazy" /></div>
                 <h2>{division.name}</h2>
                 <p>{division.description}</p>
                 <span className="division-detail">{division.detail}</span>
                 {division.link ? (
-                  <Link className="feature-link" to={division.link}>
+                  <Link className="button button-outline division-action" to={division.link}>
                     {division.action} ↗
                   </Link>
                 ) : (
