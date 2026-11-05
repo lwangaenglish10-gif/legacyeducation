@@ -170,3 +170,40 @@ input:focus, textarea:focus, select:focus { border-color: var(--le-orange) !impo
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* Lesson reader (currently uses inline layout styles in the component) */
+.learning-module-page { color: var(--le-ink); }
+.learning-module-page > a { color: var(--le-orange-dark); font-weight: 750; text-decoration: none; }
+.learning-module-page > a:hover { text-decoration: underline; }
+.learning-module-page > header {
+  padding: clamp(24px, 4vw, 42px);
+  border-radius: 20px;
+  background: linear-gradient(125deg, var(--le-forest-deep), var(--le-forest));
+  color: var(--le-cream);
+}
+.learning-module-page > header > p { color: #e7e8dc; }
+.learning-module-page > header > p:first-child { color: var(--le-gold); font-size: 11px; font-weight: 850; letter-spacing: 1.5px; }
+.learning-module-page > header h1 { color: var(--le-cream); letter-spacing: -.045em; }
+.learning-module-page > section h2 { color: var(--le-forest); }
+.learning-module-page > section article {
+  background: var(--le-surface);
+  border-color: var(--le-line) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 24px rgba(38, 59, 48, .045);
+}
+.learning-module-page > section article > p:first-child { color: var(--le-orange); font-size: 10px; font-weight: 850; letter-spacing: 1px; }
+.learning-module-page > section article h3 { color: var(--le-forest); }
+.learning-module-page button {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--le-orange);
+  border-radius: 999px;
+  background: var(--le-orange);
+  color: #fffdf8;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.learning-module-page button:hover { background: var(--le-orange-dark); border-color: var(--le-orange-dark); }
+.learning-module-page button:disabled { opacity: .65; cursor: wait; }
